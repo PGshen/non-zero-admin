@@ -23,10 +23,10 @@
         <div class="body">
           <div class="filter-container">
             <el-input @keyup.enter.native="handleFilter" style="width: 200px;" class="filter-item" placeholder="组织名称"
-                      v-model="listQuery.name">
+                      v-model="listQuery.cond.name">
             </el-input>
 
-            <el-select @change='handleFilter' style="width: 120px" class="filter-item" v-model="listQuery.sord"
+            <el-select @change='handleFilter' style="width: 120px" class="filter-item" v-model="listQuery.order"
                        placeholder="排序">
               <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key">
               </el-option>
@@ -88,7 +88,7 @@
           <div v-show="!listLoading" class="pagination-container">
             <el-pagination @size-change="handleSizeChange" @current-change="handlePageChange"
                            :current-page.sync="listQuery.page"
-                           :page-sizes="[10,20,30, 50]" :page-size="listQuery.limit"
+                           :page-sizes="[10,20,30, 50]" :page-size="listQuery.size"
                            layout="total, sizes, prev, pager, next, jumper" :total="total">
             </el-pagination>
           </div>
@@ -114,6 +114,26 @@
               <el-form-item class="org-form-item" label="组织名称">
                 <el-input class="filter-item" placeholder="请输入组织名称"
                           v-model="org.name">
+                </el-input>
+              </el-form-item>
+              <el-form-item class="org-form-item" label="组织邮箱">
+                <el-input class="filter-item" placeholder="请输入组织邮箱"
+                          v-model="org.email">
+                </el-input>
+              </el-form-item>
+              <el-form-item class="org-form-item" label="备注">
+                <el-input class="filter-item" placeholder="请输入备注"
+                          v-model="org.remark">
+                </el-input>
+              </el-form-item>
+              <el-form-item class="org-form-item" label="组织编码">
+                <el-input class="filter-item" placeholder="请输入组织编码"
+                          v-model="org.postCode">
+                </el-input>
+              </el-form-item>
+              <el-form-item class="org-form-item" label="组织电话">
+                <el-input class="filter-item" placeholder="请输入组织电话"
+                          v-model="org.tel">
                 </el-input>
               </el-form-item>
 
@@ -146,20 +166,20 @@
         orgProps: {
           children: 'children',
           label: 'name',
-          value: 'organizationId'
+          value: 'id'
         },
         // 右边菜单列表数据
         listQuery: {
           page: 1,
-          rows: 20,
-          sidx: undefined,
-          sord: '+id'
+          size: 20,
+          order: 'id',
+          cond: {}
         },
         total: null,
         treeItem: '',
         displayList: null,
         listLoading: false,
-        sortOptions: [{ label: '按ID升序列', key: '+id' }, { label: '按ID降序', key: '-id' }],
+        sortOptions: [{ label: '按ID升序列', key: '+id' }, { label: '按ID降序', key: 'id desc' }],
         tableKey: 0,
         dialogFormVisible: false,
         dialogStatus: '',
@@ -168,9 +188,13 @@
           create: '创建组织'
         },
         org: {
-          organizationId: '',
+          id: '',
           parentId: '',
           name: '',
+          email: '',
+          remark: '',
+          postCode: '',
+          tel: '',
           type: '',
           description: ''
         },
@@ -196,7 +220,8 @@
       ...mapActions({
         GetOrgTree: 'GetOrgTree',
         DeleteOrg: 'DeleteOrg',
-        AddOrg: 'AddOrg'
+        AddOrg: 'AddOrg',
+        UpdateOrg: 'UpdateOrg'
       }),
       getOrgTree() {
         this.GetOrgTree().then(status => {
@@ -229,18 +254,26 @@
         this.dialogStatus = '';
       },
       handleCreate() {
-        this.org.organizationId = '';
+        this.org.id = '';
         this.org.parentId = '';
         this.org.name = '';
+        this.org.email = '';
+        this.org.remark = '';
+        this.org.postCode = '';
+        this.org.tel = '';
         this.org.type = '';
         this.org.description = '';
         this.dialogStatus = 'create';
         this.dialogFormVisible = true;
       },
       handleUpdate(row) {
-        this.org.organizationId = row.organizationId;
+        this.org.id = row.id;
         this.org.parentId = row.parentId;
         this.org.name = row.name;
+        this.org.email = row.email;
+        this.org.remark = row.remark;
+        this.org.postCode = row.postCode;
+        this.org.tel = row.tel;
         this.org.type = row.type;
         this.org.description = row.description;
         this.dialogStatus = 'update';
@@ -252,7 +285,7 @@
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          this.DeleteOrg(row.organizationId).then(status => {
+          this.DeleteOrg(row.id).then(status => {
             if (status) {
               this.$message({
                 type: 'success',
@@ -272,7 +305,7 @@
         this.dialogStatus = '';
       },
       handleSizeChange(val) {
-        this.listQuery.limit = val;
+        this.listQuery.size = val;
       },
       handlePageChange(val) {
         this.listQuery.page = val;
@@ -286,7 +319,12 @@
         })
       },
       update() {
-        this.dialogStatus = '';
+        this.UpdateOrg(this.org).then(status => {
+          if (status) {
+            this.dialogFormVisible = false;
+            this.getOrgTree();
+          }
+        })
       },
       handleNodeClick(data) {
         this.treeItem = data.name;

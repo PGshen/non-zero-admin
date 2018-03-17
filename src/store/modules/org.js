@@ -1,7 +1,7 @@
 /**
  * Created by kennyliu on 8/23/17.
  */
-import { orgTree, orgAdd, orgDelete } from '@/api/org'
+import { orgTree, orgAdd, orgDelete, orgUpdate } from '@/api/org'
 
 const org = {
   state: {
@@ -31,6 +31,16 @@ const org = {
     AddOrg({ commit }, org) {
       return new Promise((resolve, reject) => {
         orgAdd(org).then(response => {
+          const data = response.data;
+          resolve(data.status);
+        }).catch(error => {
+          reject(error);
+        })
+      })
+    },
+    UpdateOrg({ commit }, org) {
+      return new Promise((resolve, reject) => {
+        orgUpdate(org).then(response => {
           const data = response.data;
           resolve(data.status);
         }).catch(error => {

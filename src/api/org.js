@@ -3,6 +3,7 @@ import request from '@/utils/request'
 const realApiUrl = {
   orgTree: 'base/org/tree',
   orgAdd: '/base/org',
+  orgUpdate: '/base/org',
   menuDelete: '/base/org'
 }
 
@@ -19,6 +20,13 @@ export function orgAdd(org) {
   return request({
     url: url.orgAdd,
     method: 'post',
+    data: org
+  })
+}
+export function orgUpdate(org) {
+  return request({
+    url: url.orgUpdate,
+    method: 'put',
     data: org
   })
 }

@@ -139,6 +139,7 @@
                      node-key="id"
                      :highlight-current="true"
                      show-checkbox
+                     check-strictly
                      @check-change="handleCheckChange">
             </el-tree>
           </el-col>
