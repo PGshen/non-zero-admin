@@ -35,7 +35,6 @@ const menu = {
       return new Promise((resolve, reject) => {
         menuTree().then(response => {
           const data = response.data;
-          console.log(data.data);
           if (data.status) {
             // revise(data.data.children);
             commit('SET_MENU_LIST', data.data);

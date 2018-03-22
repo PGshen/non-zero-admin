@@ -32,8 +32,8 @@
               </el-option>
             </el-select>
 
-            <el-button class="filter-item" type="primary" v-waves icon="search" @click="handleFilter">搜索</el-button>
-            <el-button class="filter-item" style="margin-left: 10px;" @click="handleCreate" type="primary" icon="edit">
+            <el-button v-if="btn.indexOf('sys:menu:list') !== -1" class="filter-item" type="primary" v-waves icon="search" @click="handleFilter">搜索</el-button>
+            <el-button v-if="btn.indexOf('sys:menu:add') !== -1" class="filter-item" style="margin-left: 10px;" @click="handleCreate" type="primary" icon="edit">
               添加
             </el-button>
             <el-button class="filter-item" type="primary" icon="document" @click="handleDownload">导出</el-button>
@@ -54,35 +54,35 @@
               </template>
             </el-table-column>
 
-            <el-table-column min-width="180" label="菜单路径">
+            <el-table-column min-width="180" label="请求URL">
               <template slot-scope="scope">
-                <span>{{scope.row.path}}</span>
+                <span>{{scope.row.url}}</span>
               </template>
             </el-table-column>
 
-            <el-table-column min-width="130" label="菜单图标">
+            <el-table-column min-width="130" label="请求Method">
               <template slot-scope="scope">
-                <span>{{scope.row.icon}}</span>
+                <span>{{scope.row.method}}</span>
               </template>
             </el-table-column>
 
             <el-table-column min-width="100" label="菜单类型">
               <template slot-scope="scope">
-                <el-tag v-if="scope.row.type == 0" type="primary">目录</el-tag>
-                <el-tag v-if="scope.row.type == 1" type="success">菜单</el-tag>
+                <el-tag v-if="scope.row.type == 0" type="primary">菜单</el-tag>
+                <el-tag v-if="scope.row.type == 1" type="success">请求</el-tag>
                 <el-tag v-if="scope.row.type == 2" type="warning">按钮</el-tag>
               </template>
             </el-table-column>
 
             <el-table-column align="center" label="操作" width="250">
               <template slot-scope="scope">
-                <el-button size="mini" type="primary"
+                <el-button v-if="btn.indexOf('sys:menu:update') !== -1" size="mini" type="primary"
                            @click="handleUpdate(scope.row)">编辑
                 </el-button>
-                <el-button size="mini" type="warning"
+                <el-button v-if="btn.indexOf('sys:menu:ban') !== -1" size="mini" type="warning"
                            @click="handleForbid(scope.row)">禁用
                 </el-button>
-                <el-button size="mini" type="danger"
+                <el-button v-if="btn.indexOf('sys:menu:delete') !== -1" size="mini" type="danger"
                            @click="handleDelete(scope.row)">删除
                 </el-button>
               </template>
@@ -107,8 +107,8 @@
                 </el-radio-group>
               </el-form-item>
 
-              <el-form-item class="menu-form-item" label="菜单名称">
-                <el-input class="filter-item" placeholder="请输入菜单名称"
+              <el-form-item class="menu-form-item" label="名称">
+                <el-input class="filter-item" placeholder="名称必须唯一,建议英文"
                           v-model="menu.name">
                 </el-input>
               </el-form-item>
@@ -122,13 +122,30 @@
                 <el-cascader :props="menuProps" :options="menuTree" @change="handleCascaderChange" change-on-select></el-cascader>
               </el-form-item>
 
-              <el-form-item class="menu-form-item" label="菜单path">
-                <el-input class="filter-item" placeholder="请输入菜单path"
+              <el-form-item v-if="menu.type === 0" class="menu-form-item" label="路由path">
+                <el-input class="filter-item" placeholder="请输入路由path"
                           v-model="menu.path">
                 </el-input>
               </el-form-item>
 
-              <el-form-item class="menu-form-item" label="菜单图标">
+              <el-form-item class="menu-form-item" label="请求URL">
+                <el-input class="filter-item" placeholder="请输入请求URL"
+                          v-model="menu.url">
+                </el-input>
+              </el-form-item>
+
+              <el-form-item class="menu-form-item" label="请求方法">
+                <el-select v-model="menu.method" placeholder="请选择">
+                  <el-option
+                    v-for="item in methods"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value">
+                  </el-option>
+                </el-select>
+              </el-form-item>
+
+              <el-form-item v-if="menu.type === 0" class="menu-form-item" label="菜单图标">
                 <el-input class="filter-item" placeholder="请输入图标名称"
                           v-model="menu.icon">
                 </el-input>
@@ -139,30 +156,30 @@
                           v-model="menu.perm">
                 </el-input>
               </el-form-item>
-              <el-form-item class="menu-form-item" label="组件">
-                <el-input class="filter-item" placeholder="组件路径"
+              <el-form-item v-if="menu.type === 0" class="menu-form-item" label="组件路径">
+                <el-input class="filter-item" placeholder="为一级菜单时填layout/Layout"
                           v-model="menu.component">
                 </el-input>
               </el-form-item>
-              <el-form-item class="menu-form-item" label="重定向">
-                <el-input class="filter-item" placeholder="重定向路径"
+              <el-form-item v-if="menu.type === 0" class="menu-form-item" label="重定向">
+                <el-input class="filter-item" placeholder="不重定向不要填"
                           v-model="menu.redirect">
                 </el-input>
               </el-form-item>
-              <el-form-item class="menu-form-item" label="是否隐藏">
+              <el-form-item v-if="menu.type === 0" class="menu-form-item" label="是否隐藏">
                 <el-radio-group v-model="menu.hidden">
                   <el-radio label="1">隐藏</el-radio>
                   <el-radio label="0">不隐藏</el-radio>
                 </el-radio-group>
               </el-form-item>
-              <el-form-item class="menu-form-item" label="为子菜单">
+              <el-form-item v-if="menu.type === 0" class="menu-form-item" label="为子菜单">
                 <el-radio-group v-model="menu.alwaysShow">
                   <el-radio label="1">是</el-radio>
                   <el-radio label="0">否</el-radio>
                 </el-radio-group>
               </el-form-item>
 
-              <el-form-item class="menu-form-item" label="排序号">
+              <el-form-item v-if="menu.type === 0" class="menu-form-item" label="排序号">
                 <el-input-number v-model="menu.orderNum">
                 </el-input-number>
               </el-form-item>
@@ -186,10 +203,11 @@
   export default {
     data() {
       return {
+        btn: this.$route.params.btn,
         // 左边列表树结构的数据
         menuProps: {
           children: 'children',
-          label: 'name',
+          label: 'title',
           value: 'id'
         },
         // 右边菜单列表数据
@@ -199,11 +217,24 @@
           order: 'id',
           cond: {}
         },
+        methods: [{
+          value: 'GET',
+          label: 'GET'
+        }, {
+          value: 'POST',
+          label: 'POST'
+        }, {
+          value: 'PUT',
+          label: 'PUT'
+        }, {
+          value: 'DELETE',
+          label: 'DELETE'
+        }],
         total: null,
         treeItem: '',
         displayList: null,
         listLoading: false,
-        sortOptions: [{ label: '按ID升序列', key: '+id' }, { label: '按ID降序', key: '-id' }],
+        sortOptions: [{ label: '按ID升序列', key: 'id' }, { label: '按ID降序', key: 'id desc' }],
         tableKey: 0,
         dialogFormVisible: false,
         dialogStatus: '',
@@ -224,15 +255,17 @@
           hidden: '1',
           alwaysShow: '0',
           component: '',
-          redirect: ''
+          redirect: '',
+          url: '',
+          method: ''
         },
         menuType: [{
           id: 0,
-          name: '目录'
+          name: '菜单'
         },
         {
           id: 1,
-          name: '菜单'
+          name: '请求'
         },
         {
           id: 2,
@@ -277,7 +310,7 @@
         this.dialogStatus = '';
       },
       handleCreate() {
-        // this.menu.id = '';
+        this.menu.id = '';
         this.menu.parentId = '';
         this.menu.type = 0;
         this.menu.name = '';
@@ -290,6 +323,8 @@
         this.menu.alwaysShow = '';
         this.menu.component = '';
         this.menu.redirect = '';
+        this.menu.url = '';
+        this.menu.method = '';
 
         this.dialogStatus = 'create';
         this.dialogFormVisible = true;
@@ -308,6 +343,8 @@
         this.menu.alwaysShow = row.alwaysShow;
         this.menu.component = row.component;
         this.menu.redirect = row.redirect;
+        this.menu.url = row.url;
+        this.menu.method = row.method;
 
         this.dialogStatus = 'update';
         this.dialogFormVisible = true;
@@ -340,7 +377,20 @@
         this.AddMenu(this.menu).then(status => {
           if (status) {
             this.dialogFormVisible = false;
+            this.$notify({
+              title: '成功',
+              message: '创建成功',
+              type: 'success',
+              duration: 2000
+            });
             this.getMenuList();
+          }else {
+            this.$notify({
+              title: '失败',
+              message: '创建失败',
+              type: 'fail',
+              duration: 2000
+            })
           }
         });
       },
@@ -348,7 +398,20 @@
         this.UpdateMenu(this.menu).then(status => {
           if (status) {
             this.dialogFormVisible = false;
+            this.$notify({
+              title: '成功',
+              message: '更新成功',
+              type: 'success',
+              duration: 2000
+            });
             this.getMenuList();
+          }else {
+            this.$notify({
+              title: '失败',
+              message: '创建失败',
+              type: 'fail',
+              duration: 2000
+            })
           }
         });
       },

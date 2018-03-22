@@ -41,7 +41,10 @@ export const constantRouterMap = [
       path: 'dashboard',
       component: _import('dashboard/index'),
       name: 'dashboard',
-      title: 'dashboard', icon: 'dashboard', noCache: true
+      title: 'dashboard', icon: 'dashboard', noCache: true,
+      meta: {
+        url: '/dashboard/page'
+      }
     }]
   },
   {
@@ -52,7 +55,10 @@ export const constantRouterMap = [
       path: 'index',
       component: _import('documentation/index'),
       name: 'documentation',
-      title: 'documentation', icon: 'documentation', noCache: true
+      title: 'documentation', icon: 'documentation', noCache: true,
+      meta: {
+        url: '/documentation/page'
+      }
     }]
   },
 
@@ -63,7 +69,10 @@ export const constantRouterMap = [
       path: 'index',
       component: _import('svg-icons/index'),
       name: 'icons',
-      title: 'icons', icon: 'icon', noCache: true
+      title: 'icons', icon: 'icon', noCache: true,
+      meta: {
+        url: '/icons/page'
+      }
     }]
   }
 ]

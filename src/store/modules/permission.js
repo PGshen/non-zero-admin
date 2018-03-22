@@ -1,5 +1,6 @@
 import { asyncRouterMap, constantRouterMap } from '@/router'
 import {routerTree} from "@/api/menu";
+import {hasPerm} from "@/api/permission";
 
 const _import = require('../../router/_import_' + process.env.NODE_ENV)
 
@@ -41,6 +42,8 @@ function revise(menuList) {
   let menu;
   for (menu in menuList) {
     menuList[menu].component = _import(menuList[menu].component);
+    menuList[menu].meta = { url : menuList[menu].url , btn : menuList[menu].btn };
+
     if (menuList[menu].alwaysShow === '1'){
       menuList[menu].alwaysShow = true;
     }else{
@@ -88,6 +91,9 @@ const permission = {
         routerTree().then(response => {
           const data = response.data;
           revise(data.data);
+          const notfound = { path: '*', redirect: '/404', hidden: true };
+          data.data.push(notfound);
+          console.log(data.data);
           if (data.status) {
             commit('SET_ROUTERS', data.data);
           }
@@ -95,6 +101,18 @@ const permission = {
         }).catch(error => {
           reject(error);
         });
+      })
+    },
+
+    hasPerm({commit}, data){
+      return new Promise((resolve, reject) => {
+        const { url } = data;
+        hasPerm(url).then(response => {
+          const data = response.data;
+          resolve(data.status);
+        }).catch(error => {
+          reject(error);
+        })
       })
     }
   }

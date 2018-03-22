@@ -15,6 +15,7 @@ import i18n from './lang' // Internationalization
 import './icons' // icon
 import './errorLog'// error log
 import './permission' // permission control
+import './utils/request'
 import vueWaves from './directive/waves/waves';// 水波纹指令
 // import './mock' // simulation data
 
