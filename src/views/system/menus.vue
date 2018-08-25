@@ -32,8 +32,8 @@
               </el-option>
             </el-select>
 
-            <el-button v-if="btn.indexOf('sys:menu:list') !== -1" class="filter-item" type="primary" v-waves icon="search" @click="handleFilter">搜索</el-button>
-            <el-button v-if="btn.indexOf('sys:menu:add') !== -1" class="filter-item" style="margin-left: 10px;" @click="handleCreate" type="primary" icon="edit">
+            <el-button v-if="typeof(btn) !== 'undefined' && btn.indexOf('sys:menu:list') !== -1" class="filter-item" type="primary" v-waves icon="search" @click="handleFilter">搜索</el-button>
+            <el-button v-if="typeof(btn) !== 'undefined' && btn.indexOf('sys:menu:add') !== -1" class="filter-item" style="margin-left: 10px;" @click="handleCreate" type="primary" icon="edit">
               添加
             </el-button>
             <el-button class="filter-item" type="primary" icon="document" @click="handleDownload">导出</el-button>
@@ -76,13 +76,13 @@
 
             <el-table-column align="center" label="操作" width="250">
               <template slot-scope="scope">
-                <el-button v-if="btn.indexOf('sys:menu:update') !== -1" size="mini" type="primary"
+                <el-button v-if="typeof(btn) !== 'undefined' && btn.indexOf('sys:menu:update') !== -1" size="mini" type="primary"
                            @click="handleUpdate(scope.row)">编辑
                 </el-button>
-                <el-button v-if="btn.indexOf('sys:menu:ban') !== -1" size="mini" type="warning"
+                <el-button v-if="typeof(btn) !== 'undefined' && btn.indexOf('sys:menu:ban') !== -1" size="mini" type="warning"
                            @click="handleForbid(scope.row)">禁用
                 </el-button>
-                <el-button v-if="btn.indexOf('sys:menu:delete') !== -1" size="mini" type="danger"
+                <el-button v-if="typeof(btn) !== 'undefined' && btn.indexOf('sys:menu:delete') !== -1" size="mini" type="danger"
                            @click="handleDelete(scope.row)">删除
                 </el-button>
               </template>

@@ -54,8 +54,10 @@ function revise(menuList) {
     }else{
       menuList[menu].hidden = false;
     }
-    if (menuList[menu].children !== undefined && menuList[menu].children !== null){
+    if (menuList[menu].children !== undefined && menuList[menu].children !== null && menuList[menu].children !== ""){
       revise(menuList[menu].children);
+    }else {
+      menuList[menu].children = [];
     }
   }
 }

@@ -39,11 +39,16 @@ router.beforeEach((to, from, next) => {
           })
         })
       } else {
-        store.dispatch('hasPerm', to.meta).then(() =>{
+        //路由前先进行鉴权,路由至401/404不需要鉴权
+        if (to.path === '/401' || to.path === '/404'){
           next();
-        }).catch(() => {
-          next({ path: '/401', replace: true, query: { noGoBack: true }});
-        })
+        } else {
+          store.dispatch('hasPerm', to.meta).then(() =>{
+            next();
+          }).catch(() => {
+            next({ path: '/401', replace: true, query: { noGoBack: true }});
+          })
+        }
         // 没有动态改变权限的需求可直接next() 删除下方权限判断 ↓
         // if (hasPermission(store.getters.roles, to.meta.roles)) {
         //   next()//

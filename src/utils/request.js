@@ -66,6 +66,10 @@ service.interceptors.response.use(
             location.reload();// 为了重新实例化vue-router对象 避免bug
           });
         })
+      }else if (res.code === 40013 || res.code === 40001) {
+        router.push('/401')
+      }else if (res.code === 40004) {
+        router.push('/404')
       }
       // if (res.code === 40003 || res.code === 40004) {
       //   router.push('/404');

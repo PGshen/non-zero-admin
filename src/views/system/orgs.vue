@@ -32,8 +32,8 @@
               </el-option>
             </el-select>
 
-            <el-button v-if="btn.indexOf('base:org:list') !== -1" class="filter-item" type="primary" v-waves icon="search" @click="handleFilter">搜索</el-button>
-            <el-button v-if="btn.indexOf('base:org:add') !== -1" class="filter-item" style="margin-left: 10px;" @click="handleCreate" type="primary" icon="edit">
+            <el-button v-if="typeof(btn) !== 'undefined' && btn.indexOf('base:org:list') !== -1" class="filter-item" type="primary" v-waves icon="search" @click="handleFilter">搜索</el-button>
+            <el-button v-if="typeof(btn) !== 'undefined' && btn.indexOf('base:org:add') !== -1" class="filter-item" style="margin-left: 10px;" @click="handleCreate" type="primary" icon="edit">
               添加
             </el-button>
             <el-button class="filter-item" type="primary" icon="document" @click="handleDownload">导出</el-button>
@@ -74,10 +74,10 @@
 
             <el-table-column align="center" label="操作" width="300">
               <template slot-scope="scope">
-                <el-button v-if="btn.indexOf('base:org:update') !== -1" size="small" type="success"
+                <el-button v-if="typeof(btn) !== 'undefined' && btn.indexOf('base:org:update') !== -1" size="small" type="success"
                            @click="handleUpdate(scope.row)">编辑
                 </el-button>
-                <el-button v-if="btn.indexOf('base:org:delete') !== -1" size="small" type="danger"
+                <el-button v-if="typeof(btn) !== 'undefined' && btn.indexOf('base:org:delete') !== -1" size="small" type="danger"
                            @click="handleDelete(scope.row)">删除
                 </el-button>
               </template>
