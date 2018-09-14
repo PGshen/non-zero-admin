@@ -1,11 +1,13 @@
 <template>
-  <div :class="className" :id="id" :style="{height:height,width:width}"></div>
+  <div :class="className" :id="id" :style="{height:height,width:width}"/>
 </template>
 
 <script>
 import echarts from 'echarts'
+import resize from './mixins/resize'
 
 export default {
+  mixins: [resize],
   props: {
     className: {
       type: String,
@@ -31,7 +33,6 @@ export default {
   },
   mounted() {
     this.initChart()
-    this.chart = null
   },
   beforeDestroy() {
     if (!this.chart) {

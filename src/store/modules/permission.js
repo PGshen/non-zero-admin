@@ -1,8 +1,9 @@
+/* eslint-disable semi */
 import { asyncRouterMap, constantRouterMap } from '@/router'
-import {routerTree} from "@/api/menu";
-import {hasPerm} from "@/api/permission";
+import { routerTree } from '@/api/menu';
+import { hasPerm, permList } from '@/api/permission';
 
-const _import = require('../../router/_import_' + process.env.NODE_ENV)
+const _import = require('../../router/_import_' + process.env.NODE_ENV);
 
 /**
  * 通过meta.role判断是否与当前用户权限匹配
@@ -28,35 +29,35 @@ function filterAsyncRouter(asyncRouterMap, roles) {
       if (route.children && route.children.length) {
         route.children = filterAsyncRouter(route.children, roles)
       }
-      return true
+      return true;
     }
-    return false
-  })
+    return false;
+  });
   return accessedRouters
 }
 
 function revise(menuList) {
   if (menuList === undefined || menuList === null || menuList === '') {
-    return ;
+    return;
   }
   let menu;
   for (menu in menuList) {
     menuList[menu].component = _import(menuList[menu].component);
-    menuList[menu].meta = { url : menuList[menu].url , btn : menuList[menu].btn };
+    menuList[menu].meta = { url: menuList[menu].url, btn: menuList[menu].btn, icon: menuList[menu].icon, title: menuList[menu].title };
 
-    if (menuList[menu].alwaysShow === '1'){
+    if (menuList[menu].alwaysShow === '1') {
       menuList[menu].alwaysShow = true;
-    }else{
+    } else {
       menuList[menu].alwaysShow = false;
     }
-    if (menuList[menu].hidden === '1'){
+    if (menuList[menu].hidden === '1') {
       menuList[menu].hidden = true;
-    }else{
+    } else {
       menuList[menu].hidden = false;
     }
-    if (menuList[menu].children !== undefined && menuList[menu].children !== null && menuList[menu].children !== ""){
+    if (menuList[menu].children !== undefined && menuList[menu].children !== null && menuList[menu].children !== '') {
       revise(menuList[menu].children);
-    }else {
+    } else {
       menuList[menu].children = [];
     }
   }
@@ -65,25 +66,30 @@ function revise(menuList) {
 const permission = {
   state: {
     routers: constantRouterMap,
-    addRouters: []
+    addRouters: [],
+    permList: []
   },
   mutations: {
     SET_ROUTERS: (state, routers) => {
-      state.addRouters = routers
+      state.addRouters = routers;
       state.routers = constantRouterMap.concat(routers)
+    },
+
+    SET_PERMS: (state, perms) => {
+      state.permList = perms;
     }
   },
   actions: {
     GenerateRoutes({ commit }, data) {
       return new Promise(resolve => {
-        const { roles } = data
-        let accessedRouters
+        const { roles } = data;
+        let accessedRouters;
         if (roles.indexOf('admin') >= 0) {
           accessedRouters = asyncRouterMap
         } else {
           accessedRouters = filterAsyncRouter(asyncRouterMap, roles)
         }
-        commit('SET_ROUTERS', accessedRouters)
+        commit('SET_ROUTERS', accessedRouters);
         resolve()
       })
     },
@@ -106,7 +112,7 @@ const permission = {
       })
     },
 
-    hasPerm({commit}, data){
+    hasPerm({ commit }, data) {
       return new Promise((resolve, reject) => {
         const { url } = data;
         hasPerm(url).then(response => {
@@ -116,8 +122,22 @@ const permission = {
           reject(error);
         })
       })
+    },
+
+    GetPerms({ commit }) {
+      return new Promise((resolve, reject) => {
+        permList().then(response => {
+          const data = response.data;
+          if (data.status) {
+            commit('SET_PERMS', data.data)
+          }
+          resolve(data.status)
+        }).catch(error => {
+          reject(error)
+        })
+      })
     }
   }
-}
+};
 
 export default permission

@@ -1,56 +1,100 @@
 <template>
-  <div class="menu-wrapper">
-    <template v-for="item in routes" v-if="!item.hidden&&item.children">
+  <div v-if="!item.hidden&&item.children" class="menu-wrapper">
 
-      <!--<router-link v-if="item.children.length===1 && !item.children[0].children&&!item.alwaysShow" :to="{ path : item.path+'/'+item.children[0].path , params : { btn : item.children[0].meta.btn }}" :key="item.children[0].name">-->
-      <router-link v-if="item.children.length===1 && (!item.children[0].children || Number(item.children[0].children)) && !item.children[0].children&&!item.alwaysShow" :to="{ name : item.children[0].name , params : { btn : item.children[0].meta.btn }}" :key="item.children[0].name">
-        <el-menu-item :index="item.path+'/'+item.children[0].path" :class="{'submenu-title-noDropdown':!isNest}">
-          <svg-icon v-if="item.children[0].icon" :icon-class="item.children[0].icon"></svg-icon>
-          <span v-if="item.children[0].title">{{generateTitle(item.children[0].title)}}</span>
+    <template v-if="hasOneShowingChild(item.children) && !onlyOneChild.children&&!item.alwaysShow">
+      <a :href="onlyOneChild.path" target="_blank" @click="clickLink(onlyOneChild.path,$event)">
+        <!--<router-link :to="{ name : onlyOneChild.name , params : { btn : onlyOneChild.meta.btn }}" :key="onlyOneChild.name" @click="clickLink(onlyOneChild.path,$event)">-->
+        <el-menu-item :index="resolvePath(onlyOneChild.path)" :class="{'submenu-title-noDropdown':!isNest}">
+          <item v-if="onlyOneChild.meta" :icon="onlyOneChild.meta.icon" :title="generateTitle(onlyOneChild.meta.title)" />
+          <!--<item v-if="onlyOneChild.meta" :icon="onlyOneChild.meta.icon" :title="generateTitle(onlyOneChild.name)" />-->
         </el-menu-item>
-      </router-link>
-
-      <!--<el-submenu v-else :index="item.name||item.path" :key="item.name">-->
-      <el-submenu v-else :index="item.path" :key="item.name">
-        <template slot="title">
-          <svg-icon v-if="item.icon" :icon-class="item.icon"></svg-icon>
-          <span v-if="item.title">{{generateTitle(item.title)}}</span>
-        </template>
-
-        <template v-for="child in item.children" v-if="!child.hidden">
-          <sidebar-item :is-nest="true" class="nest-menu" v-if="child.children&&child.children.length>0" :routes="[child]" :key="child.path"></sidebar-item>
-
-          <!--<router-link v-else :to="{ path : item.path+'/'+child.path , params : { btn : child.meta.btn }}" :key="child.name">-->
-          <router-link v-else :to="{ name : child.name , params : { btn : child.meta.btn }}" :key="child.name">
-            <el-menu-item :index="item.path+'/'+child.path">
-              <svg-icon v-if="child.icon" :icon-class="child.icon"></svg-icon>
-              <span v-if="child.title">{{generateTitle(child.title)}}</span>
-            </el-menu-item>
-          </router-link>
-        </template>
-      </el-submenu>
-
+      <!--</router-link>-->
+      </a>
     </template>
+
+    <el-submenu v-else :index="item.name||item.path">
+      <template slot="title">
+        <item v-if="item.meta" :icon="item.meta.icon" :title="generateTitle(item.meta.title)" />
+        <!--<item v-if="item.meta" :icon="item.meta.icon" :title="generateTitle(item.name)" />-->
+      </template>
+
+      <template v-for="child in item.children" v-if="!child.hidden">
+        <sidebar-item v-if="child.children&&child.children.length>0" :is-nest="true" :item="child" :key="child.path" :base-path="resolvePath(child.path)" class="nest-menu"/>
+
+        <a v-else :href="child.path" :key="child.name" target="_blank" @click="clickLink(child.path,$event)">
+          <!--通过route.name进行路由，path路由使用query参数-->
+          <!--<router-link v-else :to="{ name : child.name , params : { btn : child.meta.btn }}" :key="child.name" @click="clickLink(child.path,$event)">-->
+          <el-menu-item :index="resolvePath(child.path)">
+            <item v-if="child.meta" :icon="child.meta.icon" :title="generateTitle(child.meta.title)" />
+            <!--<item v-if="child.meta" :icon="child.meta.icon" :title="generateTitle(child.name)" />-->
+          </el-menu-item>
+        <!--</router-link>-->
+        </a>
+      </template>
+    </el-submenu>
+
   </div>
 </template>
 
 <script>
+import path from 'path'
 import { generateTitle } from '@/utils/i18n'
+import { validateURL } from '@/utils/validate'
+import Item from './Item'
 
 export default {
   name: 'SidebarItem',
+  components: { Item },
   props: {
-    routes: {
-      type: Array
+    // route object
+    item: {
+      type: Object,
+      required: true
     },
     isNest: {
       type: Boolean,
       default: false
+    },
+    basePath: {
+      type: String,
+      default: ''
+    }
+  },
+  data() {
+    return {
+      onlyOneChild: null
     }
   },
   methods: {
+    hasOneShowingChild(children) {
+      const showingChildren = children.filter(item => {
+        if (item.hidden) {
+          return false
+        } else {
+          // temp set(will be used if only has one showing child )
+          this.onlyOneChild = item
+          return true
+        }
+      })
+      if (showingChildren.length === 1) {
+        return true
+      }
+      return false
+    },
+    resolvePath(routePath) {
+      return path.resolve(this.basePath, routePath)
+    },
+    isExternalLink(routePath) {
+      return validateURL(routePath)
+    },
+    clickLink(routePath, e) {
+      if (!this.isExternalLink(routePath)) {
+        e.preventDefault()
+        const path = this.resolvePath(routePath)
+        this.$router.push(path)
+      }
+    },
     generateTitle
   }
 }
 </script>
-

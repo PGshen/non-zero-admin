@@ -9,7 +9,6 @@ import getters from './getters'
 import role from './modules/role'
 import users from './modules/users'
 import menu from './modules/menu'
-import org from './modules/org'
 
 Vue.use(Vuex)
 
@@ -22,8 +21,7 @@ const store = new Vuex.Store({
     user,
     role,
     users,
-    menu,
-    org
+    menu
   },
   getters
 })

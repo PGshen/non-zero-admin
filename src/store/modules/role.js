@@ -1,3 +1,4 @@
+/* eslint-disable semi */
 import { roleList, roleAdd, roleUpdate, roleDel, roleAuth, roleAuthList, roleListForUserAuth } from '@/api/role'
 
 const role = {
@@ -110,6 +111,6 @@ const role = {
       })
     }
   }
-}
+};
 
 export default role;

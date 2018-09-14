@@ -1,15 +1,16 @@
+/* eslint-disable semi,no-unused-vars */
 import { menuTree, menuAdd, menuUpdate, menuDelete } from '@/api/menu'
 import { generateTitle } from '@/utils/i18n'
 
 function revise(menuList) {
   if (menuList === undefined || menuList === null || menuList === '') {
-    return ;
+    return;
   }
   let menu;
   for (menu in menuList) {
-    //无法获取this
-    menuList[menu].title = generateTitle(menuList[menu].title) ;
-    if (menuList[menu].children !== undefined && menuList[menu].children !== null){
+    // 无法获取this
+    menuList[menu].title = generateTitle(menuList[menu].title);
+    if (menuList[menu].children !== undefined && menuList[menu].children !== null) {
       revise(menuList[menu].children);
     }
   }
@@ -76,6 +77,6 @@ const menu = {
   methods: {
     generateTitle
   }
-}
+};
 
 export default menu;

@@ -1,3 +1,4 @@
+/* eslint-disable semi */
 import { userList, userAdd, userUpdate, userDel, userRole } from '@/api/user'
 
 const users = {
@@ -86,6 +87,6 @@ const users = {
       })
     }
   }
-}
+};
 
 export default users;

@@ -1,3 +1,4 @@
+/* eslint-disable semi */
 import request from '@/utils/request'
 
 const realApiUrl = {
@@ -6,9 +7,9 @@ const realApiUrl = {
   menuAdd: '/sys/menu',
   menuUpdate: '/sys/menu',
   menuDelete: '/sys/menu'
-}
+};
 
-const url = realApiUrl
+const url = realApiUrl;
 
 export function menuTree() {
   return request({
@@ -40,7 +41,7 @@ export function menuUpdate(menu) {
 }
 
 export function menuDelete(id) {
-  const urlWithID = url.menuDelete + '/' + id
+  const urlWithID = url.menuDelete + '/' + id;
   return request({
     url: urlWithID,
     method: 'delete'

@@ -1,12 +1,13 @@
+/* eslint-disable semi */
 import request from '@/utils/request'
 
 const realApiUrl = {
   login: '/login',
   logout: '/logout',
   userInfo: '/sys/user/nowUser'
-}
+};
 
-const url = realApiUrl
+const url = realApiUrl;
 
 export function loginByEmail(email, password) {
   const data = {
@@ -45,4 +46,3 @@ export function getInfo() {
     method: 'post'
   });
 }
-

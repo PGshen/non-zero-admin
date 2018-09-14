@@ -1,13 +1,22 @@
+/* eslint-disable semi */
 import request from '@/utils/request'
 
+const realApiUrl = {
+  permList: '/sys/role/menu/getPerms'
+};
+
+const url = realApiUrl;
+
 export function hasPerm(url) {
-  //如果URL为空或/则不向后台进行鉴权
-  if (url === '' || url === '/'){
-    return true;
-  } else {
-    return request({
-      url: url,
-      method: 'get',
-    })
-  }
+  return request({
+    url: url,
+    method: 'get'
+  });
+}
+
+export function permList() {
+  return request({
+    url: url.permList,
+    method: 'get'
+  })
 }

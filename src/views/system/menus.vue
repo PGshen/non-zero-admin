@@ -10,8 +10,7 @@
           :props="menuProps"
           :highlight-current="true"
           accordion
-          @node-click="handleNodeClick">
-        </el-tree>
+          @node-click="handleNodeClick"/>
       </el-card>
     </div>
 
@@ -22,25 +21,36 @@
         </div>
         <div class="body">
           <div class="filter-container">
-            <el-input @keyup.enter.native="handleFilter" style="width: 200px;" class="filter-item" placeholder="菜单名称"
-                      v-model="listQuery.cond.name">
-            </el-input>
+            <el-input
+              v-model="listQuery.cond.name"
+              style="width: 200px;"
+              class="filter-item"
+              placeholder="菜单名称"
+              @keyup.enter.native="handleFilter"/>
 
-            <el-select @change='handleFilter' style="width: 120px" class="filter-item" v-model="listQuery.order"
-                       placeholder="排序">
-              <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key">
-              </el-option>
+            <el-select
+              v-model="listQuery.order"
+              style="width: 120px"
+              class="filter-item"
+              placeholder="排序"
+              @change="handleFilter">
+              <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key"/>
             </el-select>
 
-            <el-button v-if="typeof(btn) !== 'undefined' && btn.indexOf('sys:menu:list') !== -1" class="filter-item" type="primary" v-waves icon="search" @click="handleFilter">搜索</el-button>
-            <el-button v-if="typeof(btn) !== 'undefined' && btn.indexOf('sys:menu:add') !== -1" class="filter-item" style="margin-left: 10px;" @click="handleCreate" type="primary" icon="edit">
+            <el-button v-waves v-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:menu:list') !== -1" class="filter-item" type="primary" icon="search" @click="handleFilter">搜索</el-button>
+            <el-button v-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:menu:add') !== -1" class="filter-item" style="margin-left: 10px;" type="primary" icon="edit" @click="handleCreate">
               添加
             </el-button>
             <el-button class="filter-item" type="primary" icon="document" @click="handleDownload">导出</el-button>
           </div>
 
-          <el-table :key='tableKey' :data="displayList" v-loading.body="listLoading" border fit
-                    style="width: 100%">
+          <el-table
+            v-loading.body="listLoading"
+            :key="tableKey"
+            :data="displayList"
+            border
+            fit
+            style="width: 100%">
 
             <el-table-column align="center" label="序号" width="80" type="index">
               <!-- <template slot-scope="scope">
@@ -50,40 +60,49 @@
 
             <el-table-column min-width="130" label="菜单名称">
               <template slot-scope="scope">
-                <span class="link-type" @click="handleUpdate(scope.row)">{{scope.row.name}}</span>
+                <span class="link-type" @click="handleUpdate(scope.row)">{{ scope.row.name }}</span>
               </template>
             </el-table-column>
 
             <el-table-column min-width="180" label="请求URL">
               <template slot-scope="scope">
-                <span>{{scope.row.url}}</span>
+                <span>{{ scope.row.url }}</span>
               </template>
             </el-table-column>
 
             <el-table-column min-width="130" label="请求Method">
               <template slot-scope="scope">
-                <span>{{scope.row.method}}</span>
+                <span>{{ scope.row.method }}</span>
               </template>
             </el-table-column>
 
             <el-table-column min-width="100" label="菜单类型">
               <template slot-scope="scope">
-                <el-tag v-if="scope.row.type == 0" type="primary">菜单</el-tag>
-                <el-tag v-if="scope.row.type == 1" type="success">请求</el-tag>
-                <el-tag v-if="scope.row.type == 2" type="warning">按钮</el-tag>
+                <el-tag v-if="scope.row.type === 0" type="primary">菜单</el-tag>
+                <el-tag v-if="scope.row.type === 1" type="success">请求</el-tag>
+                <el-tag v-if="scope.row.type === 2" type="warning">按钮</el-tag>
               </template>
             </el-table-column>
 
             <el-table-column align="center" label="操作" width="250">
               <template slot-scope="scope">
-                <el-button v-if="typeof(btn) !== 'undefined' && btn.indexOf('sys:menu:update') !== -1" size="mini" type="primary"
-                           @click="handleUpdate(scope.row)">编辑
+                <el-button
+                  v-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:menu:update') !== -1"
+                  size="mini"
+                  type="primary"
+                  @click="handleUpdate(scope.row)">编辑
                 </el-button>
-                <el-button v-if="typeof(btn) !== 'undefined' && btn.indexOf('sys:menu:ban') !== -1" size="mini" type="warning"
-                           @click="handleForbid(scope.row)">禁用
+                <el-button
+                  v-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:menu:ban') !== -1"
+                  size="mini"
+                  type="warning"
+                  @click="handleForbid(scope.row)">禁用
                 </el-button>
-                <el-button v-if="typeof(btn) !== 'undefined' && btn.indexOf('sys:menu:delete') !== -1" size="mini" type="danger"
-                           @click="handleDelete(scope.row)">删除
+                <el-button
+                  v-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:menu:delete') !== -1"
+                  size="mini"
+                  type="danger"
+                  @click="handleDelete(scope.row)">删除
                 </el-button>
               </template>
             </el-table-column>
@@ -91,47 +110,58 @@
           </el-table>
 
           <div v-show="!listLoading" class="pagination-container">
-            <el-pagination @size-change="handleSizeChange" @current-change="handlePageChange"
-                           :current-page.sync="listQuery.page"
-                           :page-sizes="[10,20,30, 50]" :page-size="listQuery.size"
-                           layout="total, sizes, prev, pager, next, jumper" :total="total">
-            </el-pagination>
+            <el-pagination
+              :current-page.sync="listQuery.page"
+              :page-sizes="[10,20,30, 50]"
+              :page-size="listQuery.size"
+              :total="total"
+              layout="total, sizes, prev, pager, next, jumper"
+              @size-change="handleSizeChange"
+              @current-change="handlePageChange"/>
           </div>
 
           <el-dialog :title="textMap[dialogStatus]" :close-on-click-modal="false" :visible.sync="dialogFormVisible">
-            <el-form class="small-space menu-form" :inline="true" :model="menu" label-position="left"
-                     label-width="70px">
+            <el-form
+              :inline="true"
+              :model="menu"
+              class="small-space menu-form"
+              label-position="left"
+              label-width="70px">
               <el-form-item class="menu-form-item" label="类型">
                 <el-radio-group v-model="menu.type">
-                  <el-radio v-for="type in menuType" :key="type.id" :label="type.id">{{type.name}}</el-radio>
+                  <el-radio v-for="type in menuType" :key="type.id" :label="type.id">{{ type.name }}</el-radio>
                 </el-radio-group>
               </el-form-item>
 
               <el-form-item class="menu-form-item" label="名称">
-                <el-input class="filter-item" placeholder="名称必须唯一,建议英文"
-                          v-model="menu.name">
-                </el-input>
+                <el-input
+                  v-model="menu.name"
+                  class="filter-item"
+                  placeholder="名称必须唯一,建议英文"/>
               </el-form-item>
               <el-form-item class="menu-form-item" label="显示名称">
-                <el-input class="filter-item" placeholder="请输入显示名称"
-                          v-model="menu.title">
-                </el-input>
+                <el-input
+                  v-model="menu.title"
+                  class="filter-item"
+                  placeholder="请输入显示名称"/>
               </el-form-item>
 
               <el-form-item class="menu-form-item" label="上级菜单">
-                <el-cascader :props="menuProps" :options="menuTree" @change="handleCascaderChange" change-on-select></el-cascader>
+                <el-cascader :props="menuProps" :options="menuTree" change-on-select @change="handleCascaderChange"/>
               </el-form-item>
 
               <el-form-item v-if="menu.type === 0" class="menu-form-item" label="路由path">
-                <el-input class="filter-item" placeholder="请输入路由path"
-                          v-model="menu.path">
-                </el-input>
+                <el-input
+                  v-model="menu.path"
+                  class="filter-item"
+                  placeholder="请输入路由path"/>
               </el-form-item>
 
               <el-form-item class="menu-form-item" label="请求URL">
-                <el-input class="filter-item" placeholder="请输入请求URL"
-                          v-model="menu.url">
-                </el-input>
+                <el-input
+                  v-model="menu.url"
+                  class="filter-item"
+                  placeholder="请输入请求URL"/>
               </el-form-item>
 
               <el-form-item class="menu-form-item" label="请求方法">
@@ -140,31 +170,34 @@
                     v-for="item in methods"
                     :key="item.value"
                     :label="item.label"
-                    :value="item.value">
-                  </el-option>
+                    :value="item.value"/>
                 </el-select>
               </el-form-item>
 
               <el-form-item v-if="menu.type === 0" class="menu-form-item" label="菜单图标">
-                <el-input class="filter-item" placeholder="请输入图标名称"
-                          v-model="menu.icon">
-                </el-input>
+                <el-input
+                  v-model="menu.icon"
+                  class="filter-item"
+                  placeholder="请输入图标名称"/>
               </el-form-item>
 
               <el-form-item class="menu-form-item" label="授权标识">
-                <el-input class="filter-item" placeholder="请输入授权标识,menu:add"
-                          v-model="menu.perm">
-                </el-input>
+                <el-input
+                  v-model="menu.perm"
+                  class="filter-item"
+                  placeholder="请输入授权标识,menu:add"/>
               </el-form-item>
               <el-form-item v-if="menu.type === 0" class="menu-form-item" label="组件路径">
-                <el-input class="filter-item" placeholder="为一级菜单时填layout/Layout"
-                          v-model="menu.component">
-                </el-input>
+                <el-input
+                  v-model="menu.component"
+                  class="filter-item"
+                  placeholder="为一级菜单时填layout/Layout"/>
               </el-form-item>
               <el-form-item v-if="menu.type === 0" class="menu-form-item" label="重定向">
-                <el-input class="filter-item" placeholder="不重定向不要填"
-                          v-model="menu.redirect">
-                </el-input>
+                <el-input
+                  v-model="menu.redirect"
+                  class="filter-item"
+                  placeholder="不重定向不要填"/>
               </el-form-item>
               <el-form-item v-if="menu.type === 0" class="menu-form-item" label="是否隐藏">
                 <el-radio-group v-model="menu.hidden">
@@ -180,8 +213,7 @@
               </el-form-item>
 
               <el-form-item v-if="menu.type === 0" class="menu-form-item" label="排序号">
-                <el-input-number v-model="menu.orderNum">
-                </el-input-number>
+                <el-input-number v-model="menu.orderNum"/>
               </el-form-item>
             </el-form>
 
@@ -199,265 +231,272 @@
 </template>
 
 <script>
-  import { mapActions, mapGetters } from 'vuex'
-  export default {
-    data() {
-      return {
-        btn: this.$route.params.btn,
-        // 左边列表树结构的数据
-        menuProps: {
-          children: 'children',
-          label: 'title',
-          value: 'id'
-        },
-        // 右边菜单列表数据
-        listQuery: {
-          page: 1,
-          size: 20,
-          order: 'id',
-          cond: {}
-        },
-        methods: [{
-          value: 'GET',
-          label: 'GET'
-        }, {
-          value: 'POST',
-          label: 'POST'
-        }, {
-          value: 'PUT',
-          label: 'PUT'
-        }, {
-          value: 'DELETE',
-          label: 'DELETE'
-        }],
-        total: null,
-        treeItem: '',
-        displayList: null,
-        listLoading: false,
-        sortOptions: [{ label: '按ID升序列', key: 'id' }, { label: '按ID降序', key: 'id desc' }],
-        tableKey: 0,
-        dialogFormVisible: false,
-        dialogStatus: '',
-        textMap: {
-          update: '编辑菜单',
-          create: '创建菜单'
-        },
-        menu: {
-          id: undefined,
-          parentId: 0,
-          type: 0,
-          name: '',
-          title: '',
-          path: '',
-          icon: '',
-          perm: '',
-          orderNum: '',
-          hidden: '1',
-          alwaysShow: '0',
-          component: '',
-          redirect: '',
-          url: '',
-          method: ''
-        },
-        menuType: [{
-          id: 0,
-          name: '菜单'
-        },
-        {
-          id: 1,
-          name: '请求'
-        },
-        {
-          id: 2,
-          name: '按钮'
-        }]
-      };
-    },
-    created() {
-      this.getMenuList();
-    },
-    computed: {
-      ...mapGetters([
-        'menuTree',
-        'menuList'
-      ])
-    },
-    methods: {
-      ...mapActions({
-        GetMenuList: 'GetMenuList',
-        AddMenu: 'AddMenu',
-        UpdateMenu: 'UpdateMenu',
-        DeleteMenu: 'DeleteMenu'
-      }),
-      getMenuList() {
-        this.GetMenuList().then(status => {
-          if (!status) {
-            this.$notify({
-              title: '失败',
-              message: '获取菜单失败',
-              type: 'failure',
-              duration: 2000
-            });
-          } else if (this.menuList.children !== undefined || this.menuList.children !== null) {
-            this.displayList = this.menuList.children;
-          }
-        })
-      },
-      handleCascaderChange(value) {
-        this.menu.parentId = value[value.length - 1];
-      },
-      handleFilter() {
-        this.dialogStatus = '';
-      },
-      handleCreate() {
-        this.menu.id = '';
-        this.menu.parentId = '';
-        this.menu.type = 0;
-        this.menu.name = '';
-        this.menu.title = '';
-        this.menu.path = '';
-        this.menu.icon = '';
-        this.menu.perm = '';
-        this.menu.orderNum = '';
-        this.menu.hidden = '';
-        this.menu.alwaysShow = '';
-        this.menu.component = '';
-        this.menu.redirect = '';
-        this.menu.url = '';
-        this.menu.method = '';
+/* eslint-disable semi */
 
-        this.dialogStatus = 'create';
-        this.dialogFormVisible = true;
+import { mapActions, mapGetters } from 'vuex'
+import waves from '@/directive/waves' // 水波纹指令
+export default {
+  name: 'MenuManager',
+  directives: {
+    waves
+  },
+  data() {
+    return {
+      // 左边列表树结构的数据
+      menuProps: {
+        children: 'children',
+        label: 'title',
+        value: 'id'
       },
-      handleUpdate(row) {
-        this.menu.id = row.id;
-        this.menu.parentId = row.parentId;
-        this.menu.type = row.type;
-        this.menu.name = row.name;
-        this.menu.title = row.title;
-        this.menu.path = row.path;
-        this.menu.icon = row.icon;
-        this.menu.perm = row.perm;
-        this.menu.orderNum = row.orderNum;
-        this.menu.hidden = row.hidden;
-        this.menu.alwaysShow = row.alwaysShow;
-        this.menu.component = row.component;
-        this.menu.redirect = row.redirect;
-        this.menu.url = row.url;
-        this.menu.method = row.method;
-
-        this.dialogStatus = 'update';
-        this.dialogFormVisible = true;
+      // 右边菜单列表数据
+      listQuery: {
+        page: 1,
+        size: 20,
+        order: 'id',
+        cond: {}
       },
-      handleForbid(row) {
-        this.DeleteMenu(row.id).then(status => {
-          if (status) {
-            this.dialogFormVisible = false;
-            this.getMenuList();
-          }
-        });
+      methods: [{
+        value: 'GET',
+        label: 'GET'
+      }, {
+        value: 'POST',
+        label: 'POST'
+      }, {
+        value: 'PUT',
+        label: 'PUT'
+      }, {
+        value: 'DELETE',
+        label: 'DELETE'
+      }],
+      total: null,
+      treeItem: '',
+      displayList: null,
+      listLoading: false,
+      sortOptions: [{ label: '按ID升序列', key: 'id' }, { label: '按ID降序', key: 'id desc' }],
+      tableKey: 0,
+      dialogFormVisible: false,
+      dialogStatus: '',
+      textMap: {
+        update: '编辑菜单',
+        create: '创建菜单'
       },
-      handleDelete(row) {
-        this.DeleteMenu(row.id).then(status => {
-          if (status) {
-            this.getMenuList();
-          }
-        });
+      menu: {
+        id: undefined,
+        parentId: 0,
+        type: 0,
+        name: '',
+        title: '',
+        path: '',
+        icon: '',
+        perm: '',
+        orderNum: '',
+        hidden: '1',
+        alwaysShow: '0',
+        component: '',
+        redirect: '',
+        url: '',
+        method: ''
       },
-      handleDownload() {
-        this.dialogStatus = '';
+      menuType: [{
+        id: 0,
+        name: '菜单'
       },
-      handleSizeChange(val) {
-        this.listQuery.size = val;
+      {
+        id: 1,
+        name: '请求'
       },
-      handlePageChange(val) {
-        this.listQuery.page = val;
-      },
-      create() {
-        this.AddMenu(this.menu).then(status => {
-          if (status) {
-            this.dialogFormVisible = false;
-            this.$notify({
-              title: '成功',
-              message: '创建成功',
-              type: 'success',
-              duration: 2000
-            });
-            this.getMenuList();
-          }else {
-            this.$notify({
-              title: '失败',
-              message: '创建失败',
-              type: 'fail',
-              duration: 2000
-            })
-          }
-        });
-      },
-      update() {
-        this.UpdateMenu(this.menu).then(status => {
-          if (status) {
-            this.dialogFormVisible = false;
-            this.$notify({
-              title: '成功',
-              message: '更新成功',
-              type: 'success',
-              duration: 2000
-            });
-            this.getMenuList();
-          }else {
-            this.$notify({
-              title: '失败',
-              message: '创建失败',
-              type: 'fail',
-              duration: 2000
-            })
-          }
-        });
-      },
-      handleNodeClick(data) {
-        this.treeItem = data.name;
-      },
-      // 遍历树状结构，获取当前菜单下的子菜单信息
-      getMenuItem(menuName, menuList) {
-        if (menuList === undefined || menuList === null || menuList === '') {
-          return [];
-        }
-        if (menuList.children === undefined || menuList.children === null || menuList === '') {
-          return [];
-        }
-        let result = null;
-        let menu;
-        for (menu in menuList.children) {
-          if (menuName === menuList.children[menu].name) {
-            result = menuList.children[menu].children;
-            break;
-          } else {
-            let retResult = null;
-            retResult = this.getMenuItem(menuName,menuList.children[menu]);
-            if (retResult !== null) {
-              result = retResult;
-              break;
-            }
-          }
-        }
-
-        if (result === '') {
-          result = [];
-        }
-
-        return result;
-      }
-    },
-    watch: {
-      treeItem: function(val) {
-        if (val !== null) {
-          this.displayList = null;
-          this.displayList = this.getMenuItem(val, this.menuList);
-        }
+      {
+        id: 2,
+        name: '按钮'
+      }]
+    }
+  },
+  computed: {
+    ...mapGetters([
+      'menuTree',
+      'menuList',
+      'permList'
+    ])
+  },
+  watch: {
+    treeItem: function(val) {
+      if (val !== null) {
+        this.displayList = null;
+        this.displayList = this.getMenuItem(val, this.menuList);
       }
     }
-  };
+  },
+  created() {
+    this.getMenuList()
+  },
+  methods: {
+    ...mapActions({
+      GetMenuList: 'GetMenuList',
+      AddMenu: 'AddMenu',
+      UpdateMenu: 'UpdateMenu',
+      DeleteMenu: 'DeleteMenu'
+    }),
+    getMenuList() {
+      this.GetMenuList().then(status => {
+        if (!status) {
+          this.$notify({
+            title: '失败',
+            message: '获取菜单失败',
+            type: 'failure',
+            duration: 2000
+          })
+        } else if (this.menuList.children !== undefined || this.menuList.children !== null) {
+          this.displayList = this.menuList.children
+        }
+      })
+    },
+    handleCascaderChange(value) {
+      this.menu.parentId = value[value.length - 1]
+    },
+    handleFilter() {
+      this.dialogStatus = ''
+    },
+    handleCreate() {
+      this.menu.id = '';
+      this.menu.parentId = '';
+      this.menu.type = 0;
+      this.menu.name = '';
+      this.menu.title = '';
+      this.menu.path = '';
+      this.menu.icon = '';
+      this.menu.perm = '';
+      this.menu.orderNum = '';
+      this.menu.hidden = '';
+      this.menu.alwaysShow = '';
+      this.menu.component = '';
+      this.menu.redirect = '';
+      this.menu.url = '';
+      this.menu.method = '';
+
+      this.dialogStatus = 'create';
+      this.dialogFormVisible = true;
+    },
+    handleUpdate(row) {
+      this.menu.id = row.id;
+      this.menu.parentId = row.parentId;
+      this.menu.type = row.type;
+      this.menu.name = row.name;
+      this.menu.title = row.title;
+      this.menu.path = row.path;
+      this.menu.icon = row.icon;
+      this.menu.perm = row.perm;
+      this.menu.orderNum = row.orderNum;
+      this.menu.hidden = row.hidden;
+      this.menu.alwaysShow = row.alwaysShow;
+      this.menu.component = row.component;
+      this.menu.redirect = row.redirect;
+      this.menu.url = row.url;
+      this.menu.method = row.method;
+
+      this.dialogStatus = 'update';
+      this.dialogFormVisible = true;
+    },
+    handleForbid(row) {
+      this.DeleteMenu(row.id).then(status => {
+        if (status) {
+          this.dialogFormVisible = false;
+          this.getMenuList()
+        }
+      })
+    },
+    handleDelete(row) {
+      this.DeleteMenu(row.id).then(status => {
+        if (status) {
+          this.getMenuList()
+        }
+      })
+    },
+    handleDownload() {
+      this.dialogStatus = ''
+    },
+    handleSizeChange(val) {
+      this.listQuery.size = val
+    },
+    handlePageChange(val) {
+      this.listQuery.page = val
+    },
+    create() {
+      this.AddMenu(this.menu).then(status => {
+        if (status) {
+          this.dialogFormVisible = false;
+          this.$notify({
+            title: '成功',
+            message: '创建成功',
+            type: 'success',
+            duration: 2000
+          });
+          this.getMenuList()
+        } else {
+          this.$notify({
+            title: '失败',
+            message: '创建失败',
+            type: 'fail',
+            duration: 2000
+          })
+        }
+      })
+    },
+    update() {
+      this.UpdateMenu(this.menu).then(status => {
+        if (status) {
+          this.dialogFormVisible = false;
+          this.$notify({
+            title: '成功',
+            message: '更新成功',
+            type: 'success',
+            duration: 2000
+          });
+          this.getMenuList()
+        } else {
+          this.$notify({
+            title: '失败',
+            message: '创建失败',
+            type: 'fail',
+            duration: 2000
+          })
+        }
+      })
+    },
+    handleNodeClick(data) {
+      this.treeItem = data.name
+    },
+    // 遍历树状结构，获取当前菜单下的子菜单信息
+    getMenuItem(menuName, menuList) {
+      if (menuList === undefined || menuList === null || menuList === '') {
+        return []
+      }
+      if (menuList.children === undefined || menuList.children === null || menuList === '') {
+        return []
+      }
+      let result = null;
+      let menu;
+      for (menu in menuList.children) {
+        if (menuName === menuList.children[menu].name) {
+          result = menuList.children[menu].children;
+          break
+        } else {
+          let retResult = null;
+          retResult = this.getMenuItem(menuName, menuList.children[menu]);
+          if (retResult !== null) {
+            result = retResult;
+            break
+          }
+        }
+      }
+
+      if (result === '') {
+        result = []
+      }
+
+      return result
+    }
+  }
+}
 </script>
 
 <style rel="stylesheet/scss" lang="scss">

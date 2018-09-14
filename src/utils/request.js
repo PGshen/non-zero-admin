@@ -1,31 +1,32 @@
+/* eslint-disable semi */
 import axios from 'axios'
-import {Message} from 'element-ui'
+import { Message, MessageBox } from 'element-ui'
 import store from '@/store'
 import router from '@/router'
 // import router from '../router'
-import {getToken} from '@/utils/auth'
+import { getToken } from '@/utils/auth'
 
 // CORS Cross-Origin Macro
-const ALLOW_ORIGIN = 'Access-Control-Allow-Origin'
-const ALLOW_HEADERS = 'Access-Control-Allow-Headers'
-const ALLOW_METHODS = 'Access-Control-Allow-Methods'
+const ALLOW_ORIGIN = 'Access-Control-Allow-Origin';
+const ALLOW_HEADERS = 'Access-Control-Allow-Headers';
+const ALLOW_METHODS = 'Access-Control-Allow-Methods';
 
-const CONTENT_TYPE = 'Content-Type'
-const X_AUTH_TOKEN = 'x-auth-token'
+const CONTENT_TYPE = 'Content-Type';
+const X_AUTH_TOKEN = 'x-auth-token';
 
-axios.defaults.headers[CONTENT_TYPE] = 'application/json'
+axios.defaults.headers[CONTENT_TYPE] = 'application/json';
 
 // cors 跨域设置
-axios.defaults.headers[ALLOW_ORIGIN] = '*'
-axios.defaults.headers[ALLOW_HEADERS] = '*'
-axios.defaults.headers[ALLOW_METHODS] = '*'
+axios.defaults.headers[ALLOW_ORIGIN] = '*';
+axios.defaults.headers[ALLOW_HEADERS] = '*';
+axios.defaults.headers[ALLOW_METHODS] = '*';
 
 // create an axios instance
 const service = axios.create({
   baseURL: process.env.BASE_API, // api的base_url
   timeout: 10000, // request timeout
   withCredentials: false
-})
+});
 
 // request interceptor
 service.interceptors.request.use(config => {
@@ -36,9 +37,9 @@ service.interceptors.request.use(config => {
   return config
 }, error => {
   // Do something with request error
-  console.log(error) // for debug
+  console.log(error); // for debug
   Promise.reject(error)
-})
+});
 
 // respone interceptor
 service.interceptors.response.use(
@@ -63,31 +64,31 @@ service.interceptors.response.use(
           type: 'warning'
         }).then(() => {
           store.dispatch('FedLogOut').then(() => {
-            location.reload();// 为了重新实例化vue-router对象 避免bug
-          });
+            location.reload()// 为了重新实例化vue-router对象 避免bug
+          })
         })
-      }else if (res.code === 40013 || res.code === 40001) {
+      } else if (res.code === 40013 || res.code === 40001) {
         router.push('/401')
-      }else if (res.code === 40004) {
+      } else if (res.code === 40004) {
         router.push('/404')
       }
       // if (res.code === 40003 || res.code === 40004) {
       //   router.push('/404');
       // }
       // return Promise.reject('error');
-      return response;
+      return response
     } else {
-      return response;
+      return response
     }
   },
   error => {
-    console.log('err' + error)// for debug
+    console.log('err' + error); // for debug
     Message({
       message: error.message,
       type: 'error',
       duration: 5 * 1000
-    })
+    });
     return Promise.reject(error)
-  })
+  });
 
 export default service

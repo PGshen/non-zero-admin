@@ -1,3 +1,4 @@
+/* eslint-disable semi */
 import request from '@/utils/request'
 
 const realApiUrl = {
@@ -8,9 +9,9 @@ const realApiUrl = {
   roleAuth: '/sys/role/auth',
   roleAuthList: '/sys/role/authlist',
   roleListForUserAuth: '/sys/role/rolelist'
-}
+};
 
-const url = realApiUrl
+const url = realApiUrl;
 
 export function roleList(params) {
   return request({

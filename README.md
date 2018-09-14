@@ -1,5 +1,28 @@
-# non-zero-admin
+## Non-zero management system
 
-## 1.与non-zero项目配合的前端项目
-* 项目基于[花衩裤](https://github.com/PanJiaChen/vue-element-admin)开发的vue信息系统管理平台
-* 项目目前完成基础的用户管理和动态菜单
+> base on [花裤衩](https://github.com/PanJiaChen/vue-element-admin)
+
+## Getting started
+
+```bash
+# clone the project
+git clone git clone git@bitbucket.org:non-zero/non-zero-front-end.git
+
+# install dependency
+npm install
+
+# develop
+npm run dev
+```
+
+This will automatically open http://localhost:9528.
+
+## Build
+
+```bash
+# build for test environment
+npm run build:sit
+
+# build for production environment
+npm run build:prod
+```

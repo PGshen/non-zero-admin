@@ -1,3 +1,4 @@
+/* eslint-disable semi */
 import request from '@/utils/request'
 
 const realApiUrl = {
@@ -6,9 +7,9 @@ const realApiUrl = {
   userUpdate: '/sys/user',
   userDelete: '/sys/user',
   userRole: '/sys/user/userrolelist'
-}
+};
 
-const url = realApiUrl
+const url = realApiUrl;
 
 export function userList(listQuery) {
   return request({

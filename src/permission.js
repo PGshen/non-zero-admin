@@ -1,3 +1,4 @@
+/* eslint-disable semi */
 import router from './router'
 import store from './store'
 import { Message } from 'element-ui'
@@ -5,32 +6,25 @@ import NProgress from 'nprogress' // progress bar
 import 'nprogress/nprogress.css'// progress bar style
 import { getToken } from '@/utils/auth' // getToken from cookie
 
-NProgress.configure({ showSpinner: false })// NProgress Configuration
+NProgress.configure({ showSpinner: false }); // NProgress Configuration
 
-// permissiom judge function
-function hasPermission(roles, permissionRoles) {
-  if (roles.indexOf('admin') >= 0) return true // admin permission passed directly
-  if (!permissionRoles) return true
-  return roles.some(role => permissionRoles.indexOf(role) >= 0)
-}
-
-const whiteList = ['/login', '/authredirect']// no redirect whitelist
+const whiteList = ['/login', '/authredirect']; // no redirect whitelist
 
 router.beforeEach((to, from, next) => {
-  NProgress.start() // start progress bar
+  NProgress.start(); // start progress bar
   if (getToken()) { // determine if there has token
     /* has token*/
     if (to.path === '/login') {
-      next({ path: '/' })
+      next({ path: '/' });
       NProgress.done() // if current page is dashboard will not trigger	afterEach hook, so manually handle it
     } else {
       if (store.getters.roles.length === 0) { // 判断当前用户是否已拉取完user_info信息
         store.dispatch('GetInfo').then(res => { // 拉取user_info
-          const roles = res.data.data.role // note: roles must be a array! such as: ['editor','develop']
-          // store.dispatch('GenerateRoutes', { roles }).then(() => { // 根据roles权限生成可访问的路由表
           store.dispatch('RouterTree').then(() => { // 根据roles权限生成可访问的路由表
-            router.addRoutes(store.getters.addRouters) // 动态添加可访问路由表
-            next({ ...to, replace: true }) // hack方法 确保addRoutes已完成 ,set the replace: true so the navigation will not leave a history record
+            store.dispatch('GetPerms').then(() => { // 获取当前用户的权限列表
+              router.addRoutes(store.getters.addRouters); // 动态添加可访问路由表
+              next({ ...to, replace: true }) // hack方法 确保addRoutes已完成 ,set the replace: true so the navigation will not leave a history record
+            })
           })
         }).catch(() => {
           store.dispatch('FedLogOut').then(() => {
@@ -39,15 +33,19 @@ router.beforeEach((to, from, next) => {
           })
         })
       } else {
-        //路由前先进行鉴权,路由至401/404不需要鉴权
-        if (to.path === '/401' || to.path === '/404'){
+        // 路由前先进行鉴权,路由至401/404不需要鉴权
+        if (to.path === '/401' || to.path === '/404') {
           next();
         } else {
-          store.dispatch('hasPerm', to.meta).then(() =>{
+          if (to.meta.url !== '' && to.meta.url !== '/' && to.meta.url !== undefined) {
+            store.dispatch('hasPerm', to.meta).then(() => {
+              next();
+            }).catch(() => {
+              next({ path: '/401', replace: true, query: { noGoBack: true }});
+            })
+          } else {
             next();
-          }).catch(() => {
-            next({ path: '/401', replace: true, query: { noGoBack: true }});
-          })
+          }
         }
         // 没有动态改变权限的需求可直接next() 删除下方权限判断 ↓
         // if (hasPermission(store.getters.roles, to.meta.roles)) {
@@ -63,12 +61,12 @@ router.beforeEach((to, from, next) => {
     if (whiteList.indexOf(to.path) !== -1) { // 在免登录白名单，直接进入
       next()
     } else {
-      next('/login') // 否则全部重定向到登录页
-      NProgress.done() // if current page is login will not trigger afterEach hook, so manually handle it
+      next('/login'); // 否则全部重定向到登录页
+      NProgress.done(); // if current page is login will not trigger afterEach hook, so manually handle it
     }
   }
-})
+});
 
 router.afterEach(() => {
   NProgress.done() // finish progress bar
-})
+});
