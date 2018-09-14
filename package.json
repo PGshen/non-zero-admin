@@ -1,8 +1,8 @@
 {
-  "name": "non-zero-admin",
+  "name": "non-zero",
   "version": "3.8.1",
-  "description": "A magical vue admin. Typical templates for enterprise applications. Newest development stack of vue. Lots of awesome features",
-  "author": "Pan <panfree23@gmail.com>",
+  "description": "non-zero",
+  "author": "Pen",
   "license": "MIT",
   "scripts": {
     "dev": "cross-env BABEL_ENV=development webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
@@ -78,7 +78,7 @@
     "file-loader": "1.1.11",
     "friendly-errors-webpack-plugin": "1.7.0",
     "hash-sum": "1.0.2",
-    "html-webpack-plugin": "^3.0.0",
+    "html-webpack-plugin": "^4.0.0-alpha",
     "husky": "0.14.3",
     "lint-staged": "7.2.2",
     "mini-css-extract-plugin": "0.4.1",

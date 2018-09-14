@@ -1,5 +1,5 @@
 <template>
-  <h1>solution</h1>
+  <router-view/>
 </template>
 
 <script>

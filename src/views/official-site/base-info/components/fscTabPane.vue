@@ -1,41 +1,13 @@
 <template>
-  <div class="app-container calendar-list-container">
-    <div class="header-container">
-      <el-alert :closable="false" style="width:200px;display:inline-block;vertical-align: middle;" title="首页轮播图配置" type="success"/>
-    </div>
-    <div class="filter-container">
-      <el-input
-        v-model="listQuery.cond.heading"
-        style="width: 200px;"
-        class="filter-item"
-        placeholder="标题"
-        @keyup.enter.native="handleFilter"/>
-
-      <el-select
-        v-model="listQuery.enable"
-        style="width: 120px"
-        class="filter-item"
-        placeholder="筛选"
-        @change="handleFilter">
-        <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key"/>
-      </el-select>
-
-      <el-button v-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:user:list') !== -1" class="filter-item" type="primary" icon="search" @click="handleFilter">搜索</el-button>
-      <el-button v-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:user:add') !== -1" class="filter-item" style="margin-left: 10px;" type="primary" icon="edit" @click="handleCreate">
-        添加
-      </el-button>
-      <el-button class="filter-item" type="primary" icon="document" @click="handleDownload">导出</el-button>
-
-    </div>
-
+  <div>
     <el-table
       v-loading.body="listLoading"
-      :data="carouselList"
+      :data="first_screenList"
       border
       fit
       highlight-current-row
       style="width: 100%">
-      <el-table-column align="center" label="ID" width="80">
+      <el-table-column align="center" label="ID" width="60px">
         <template slot-scope="scope">
           <span>{{ scope.row.id }}</span>
         </template>
@@ -71,7 +43,7 @@
         </template>
       </el-table-column>
 
-      <el-table-column width="250px" align="center" label="Operation">
+      <el-table-column width="220px" align="center" label="Operation">
         <template slot-scope="scope">
           <el-button
             v-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:user:update') !== -1"
@@ -114,34 +86,44 @@
     </div>
 
     <el-dialog :title="textMap[dialogStatus]" :close-on-click-modal="false" :visible.sync="dialogFormVisible">
-      <el-form :model="carousel" class="small-space carousel-form" label-position="left" label-width="70px">
-        <el-form-item class="carousel-form-item" label="标题">
+      <el-form :model="first_screen" class="small-space first_screen-form" label-position="left" label-width="70px">
+        <el-form-item class="first_screen-form-item" label="首屏">
+          <el-select v-model="type" placeholder="请选择">
+            <el-option
+              v-for="item in options"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"/>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item class="first_screen-form-item" label="标题">
           <el-input
-            v-model="carousel.heading"
+            v-model="first_screen.heading"
             style="width: 90%;"
             class="filter-item"
             placeholder="请输入"/>
         </el-form-item>
 
-        <el-form-item class="carousel-form-item" label="副标题">
+        <el-form-item class="first_screen-form-item" label="副标题">
           <el-input
-            v-model="carousel.sub_heading"
+            v-model="first_screen.sub_heading"
             style="width: 90%;"
             class="filter-item"
             placeholder="请输入"/>
         </el-form-item>
 
-        <el-form-item class="carousel-form-item" label="启用">
+        <el-form-item class="first_screen-form-item" label="启用">
           <el-switch
-            v-model="carousel.enable"
+            v-model="first_screen.enable"
             active-color="#13ce66"
             inactive-color="#ff4949"/>
         </el-form-item>
 
-        <el-form-item class="carousel-form-item" label="描述">
+        <el-form-item class="first_screen-form-item" label="描述">
           <el-input
             :autosize="{ minRows: 2, maxRows: 4}"
-            v-model="carousel.description"
+            v-model="first_screen.description"
             style="width: 90%;"
             type="textarea"
             placeholder="请输入内容"/>
@@ -156,7 +138,7 @@
             <i class="el-icon-plus"/>
           </el-upload>
           <el-dialog :visible.sync="picVisible">
-            <img :src="carousel.pic" width="100%" alt="">
+            <img :src="first_screen.pic" width="100%" alt="">
           </el-dialog>
         </el-form-item>
       </el-form>
@@ -174,15 +156,22 @@
 /* eslint-disable semi */
 
 import { mapGetters } from 'vuex'
-import { fetchList } from '@/api/official-site/base-info/carouselConf'
+import { fetchList } from '@/api/official-site/base-info/firstScreenConf'
 
 export default {
-  name: 'CarouselConf',
+  name: 'FSCtabPane',
+  props: {
+    type: {
+      type: String,
+      default: 'ABOUT_US'
+    }
+  },
   data() {
     return {
-      carouselList: null,
-      carousel: {
+      first_screenList: null,
+      first_screen: {
         id: null,
+        type: '',
         created_time: '',
         heading: '',
         sub_heading: '',
@@ -195,8 +184,7 @@ export default {
       listQuery: {
         page: 1,
         size: 5,
-        enable: '-1',
-        cond: {}
+        type: this.type
       },
       sortOptions: [{ label: '全部', key: '-1' }, { label: '已启用', key: '1' }, { label: '未启用', key: '0' }],
       textMap: {
@@ -205,7 +193,29 @@ export default {
       },
       dialogStatus: '',
       dialogFormVisible: false,
-      picVisible: false
+      picVisible: false,
+      options: [{
+        value: 'ABOUT_US',
+        label: '关于我们'
+      }, {
+        value: 'CONTACT_US',
+        label: '联系我们'
+      }, {
+        value: 'NEWS',
+        label: '新闻中心'
+      }, {
+        value: 'PRODUCT',
+        label: '产品中心'
+      }, {
+        value: 'SOLUTION',
+        label: '解决方案'
+      }, {
+        value: 'CASE',
+        label: '客户案例'
+      }, {
+        value: 'RECRUIT',
+        label: '人才招聘'
+      }]
     }
   },
   computed: {
@@ -221,13 +231,13 @@ export default {
       console.log(file, fileList);
     },
     handlePreview(file) {
-      this.carousel.pic = file.url;
+      this.first_screen.pic = file.url;
       this.picVisible = true;
     },
     getList() {
       this.listLoading = true;
       fetchList(this.listQuery).then(response => {
-        this.carouselList = response.data.items;
+        this.first_screenList = response.data.items;
         this.total = response.data.total;
         this.listLoading = false;
       })
@@ -266,10 +276,10 @@ export default {
     padding-bottom: 10px;
   }
 
-  .carousel-form {
+  .first_screen-form {
     width: 92%;
     margin-left: 8%;
-    .carousel-form-item {
+    .first_screen-form-item {
       display: inline-block;
       width: 100%;
     }

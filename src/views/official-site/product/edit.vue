@@ -1,10 +1,10 @@
 <template>
-  <router-view/>
+  <p>产品编辑</p>
 </template>
 
 <script>
 export default {
-  name: 'Index'
+  name: 'Edit'
 }
 </script>
 

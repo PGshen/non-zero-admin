@@ -1,10 +1,10 @@
 <template>
-  <router-view/>
+  <p>解决方案列表</p>
 </template>
 
 <script>
 export default {
-  name: 'Index'
+  name: 'List'
 }
 </script>
 

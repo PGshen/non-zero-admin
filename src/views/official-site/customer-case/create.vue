@@ -1,10 +1,10 @@
 <template>
-  <router-view/>
+  <p>客户案例创建</p>
 </template>
 
 <script>
 export default {
-  name: 'Index'
+  name: 'Create'
 }
 </script>
 
