@@ -91,39 +91,6 @@ export const constantRouterMap = [
   /** When your routing table is too long, you can split it into small modules**/
   componentsRouter,
   tableRouter,
-
-  {
-    path: '/example',
-    component: Layout,
-    redirect: '/example/list',
-    name: 'example',
-    meta: {
-      title: 'example',
-      icon: 'example'
-    },
-    children: [
-      {
-        path: 'create',
-        component: _import('example/create'),
-        name: 'createArticle',
-        meta: { title: 'createArticle', icon: 'edit' }
-      },
-      {
-        path: 'edit/:id(\\d+)',
-        component: _import('example/edit'),
-        name: 'editArticle',
-        meta: { title: 'editArticle', noCache: true },
-        hidden: true
-      },
-      {
-        path: 'list',
-        component: _import('example/list'),
-        name: 'articleList',
-        meta: { title: 'articleList', icon: 'list' }
-      }
-    ]
-  },
-
   { path: '*', redirect: '/404', hidden: true }
 ]
 
