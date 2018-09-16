@@ -3,6 +3,7 @@ import { param2Obj } from '@/utils'
 
 const List = []
 const count = 20
+const ProductList = []
 
 const img_url = [
   'http://non-zero.space/zero/static/img/dm1.3b5e7bc.jpg',
@@ -27,23 +28,38 @@ for (let i = 0; i < count; i++) {
     product_text: '@title(100,300)',
     'product_class|1': ['人工智能', '区块链', '大数据'],
     product_pic: img_url[i % 8],
-    is_enable: '@integer(0,1)',
+    'is_enable|1': ['published', 'draft', 'deleted'],
     create_user: '@first'
   }))
 }
 
+for (let i = 0; i < count; i++) {
+  ProductList.push(Mock.mock({
+    name: '@first'
+  }))
+}
+
 export default {
-  getProduct: config => {
+  getList: config => {
     const { page = 1, size = 5 } = param2Obj(config.url)
     const mockList = List.filter(item => {
       return true
     })
 
-    const pageList = mockList.filter((item, index) => index < size * page && index > size * (page - 1))
+    const pageList = mockList.filter((item, index) => index < size * page && index >= size * (page - 1))
 
     return {
-      total: pageList.length,
+      total: mockList.length,
       items: pageList
+    }
+  },
+
+  getProduct: (config) => {
+    const { id } = param2Obj(config.url)
+    for (const product of List) {
+      if (product.id === +id) {
+        return product
+      }
     }
   },
 
@@ -53,5 +69,15 @@ export default {
 
   updateProduct: () => ({
     data: 'success'
-  })
+  }),
+
+  searchProduct: config => {
+    const { name } = param2Obj(config.url)
+    const mockProductList = ProductList.filter(item => {
+      const lowerCaseProduct = item.name.toLowerCase()
+      if (name && lowerCaseProduct.indexOf(name.toLowerCase()) < 0) return false
+      return true
+    })
+    return { items: mockProductList }
+  }
 }

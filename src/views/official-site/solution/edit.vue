@@ -1,10 +1,15 @@
 <template>
-  <p>方案编辑</p>
+  <solution-detail :is-edit="true"/>
 </template>
 
 <script>
+import solutionDetail from './components/solutionDetail'
+
 export default {
-  name: 'Edit'
+  name: 'EditSolution',
+  components: {
+    solutionDetail
+  }
 }
 </script>
 

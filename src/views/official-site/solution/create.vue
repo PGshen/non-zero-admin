@@ -1,10 +1,15 @@
 <template>
-  <p>方案创建</p>
+  <solution-detail :is-edit="false"/>
 </template>
 
 <script>
+import solutionDetail from './components/solutionDetail'
+
 export default {
-  name: 'Create'
+  name: 'CreateSolution',
+  components: {
+    solutionDetail
+  }
 }
 </script>
 

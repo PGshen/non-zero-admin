@@ -1,10 +1,18 @@
 import request from '@/utils/request'
 
-export function fetchSolution(query) {
+export function fetchList(query) {
   return request({
     url: '/official-site/solution/list',
     method: 'get',
     params: query
+  })
+}
+
+export function fetchSolution(id) {
+  return request({
+    url: '/official-site/solution/detail',
+    method: 'get',
+    params: { id }
   })
 }
 
@@ -21,5 +29,13 @@ export function eidtSolution(data) {
     url: '/official-site/solution/edit',
     method: 'post',
     data
+  })
+}
+
+export function solutionSearch(name) {
+  return request({
+    url: '/search/solution',
+    method: 'get',
+    params: { name }
   })
 }

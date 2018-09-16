@@ -1,10 +1,15 @@
 <template>
-  <p>客户案例创建</p>
+  <customer-case-detail :is-edit="false"/>
 </template>
 
 <script>
+import customerCaseDetail from './components/customerCaseDetail'
+
 export default {
-  name: 'Create'
+  name: 'CreateCustomerCase',
+  components: {
+    customerCaseDetail
+  }
 }
 </script>
 

@@ -1,10 +1,15 @@
 <template>
-  <p>产品编辑</p>
+  <product-detail :is-edit="true"/>
 </template>
 
 <script>
+import productDetail from './components/productDetail'
+
 export default {
-  name: 'Edit'
+  name: 'EditProduct',
+  components: {
+    productDetail
+  }
 }
 </script>
 

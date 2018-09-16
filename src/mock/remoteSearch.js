@@ -2,14 +2,17 @@ import Mock from 'mockjs'
 import { param2Obj } from '@/utils'
 
 const NameList = []
-const count = 100
+const ProductList = []
+const count = 20
 
 for (let i = 0; i < count; i++) {
   NameList.push(Mock.mock({
     name: '@first'
   }))
 }
+
 NameList.push({ name: 'mockPan' })
+ProductList.push({ name: 'mockProduct' })
 
 export default {
   searchUser: config => {
@@ -21,4 +24,5 @@ export default {
     })
     return { items: mockNameList }
   }
+
 }

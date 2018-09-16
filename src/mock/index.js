@@ -27,6 +27,9 @@ Mock.mock(/\/article\/update/, 'post', articleAPI.updateArticle)
 
 // 搜索相关
 Mock.mock(/\/search\/user/, 'get', remoteSearchAPI.searchUser)
+Mock.mock(/\/search\/product/, 'get', product.searchProduct)
+Mock.mock(/\/search\/solution/, 'get', solution.searchSolution)
+Mock.mock(/\/search\/customer-case/, 'get', customerCase.searchCustomerCase)
 
 // 账单相关
 Mock.mock(/\/transaction\/list/, 'get', transactionAPI.getList)
@@ -41,15 +44,21 @@ Mock.mock(/\/base-info\/first-screen\/list/, 'get', firstScreenConfAPI.getFirstS
 Mock.mock(/\/base-info\/first-screen\/create/, 'post', firstScreenConfAPI.createFirstScreen)
 Mock.mock(/\/base-info\/first-screen\/update/, 'post', firstScreenConfAPI.updateFirstScreen)
 
-Mock.mock(/\/official-site\/product\/list/, 'get', product.getProduct)
+// 产品
+Mock.mock(/\/official-site\/product\/list/, 'get', product.getList)
+Mock.mock(/\/official-site\/product\/detail/, 'get', product.getProduct)
 Mock.mock(/\/official-site\/product\/create/, 'get', product.createProduct)
 Mock.mock(/\/official-site\/product\/update/, 'get', product.updateProduct)
 
-Mock.mock(/\/official-site\/solution\/list/, 'get', solution.getSolution)
+// 解决方案
+Mock.mock(/\/official-site\/solution\/list/, 'get', solution.getList)
+Mock.mock(/\/official-site\/solution\/detail/, 'get', solution.getSolution)
 Mock.mock(/\/official-site\/solution\/create/, 'get', solution.createSolution)
 Mock.mock(/\/official-site\/solution\/update/, 'get', solution.updateSolution)
 
-Mock.mock(/\/official-site\/customer-case\/list/, 'get', customerCase.getCustomerCase)
+// 客户案例
+Mock.mock(/\/official-site\/customer-case\/list/, 'get', customerCase.getList)
+Mock.mock(/\/official-site\/customer-case\/detail/, 'get', customerCase.getCustomerCase)
 Mock.mock(/\/official-site\/customer-case\/create/, 'get', customerCase.createCustomerCase)
 Mock.mock(/\/official-site\/customer-case\/update/, 'get', customerCase.updateCustomerCase)
 

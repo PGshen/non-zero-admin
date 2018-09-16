@@ -1,10 +1,15 @@
 <template>
-  <p>新建产品</p>
+  <product-detail :is-edit="false"/>
 </template>
 
 <script>
+import productDetail from './components/productDetail'
+
 export default {
-  name: 'Create'
+  name: 'CreateProduct',
+  components: {
+    productDetail
+  }
 }
 </script>
 

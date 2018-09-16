@@ -1,10 +1,18 @@
 import request from '@/utils/request'
 
-export function fetchCustomerCase(query) {
+export function fetchList(query) {
   return request({
     url: '/official-site/customer-case/list',
     method: 'get',
     params: query
+  })
+}
+
+export function fetchCustomerCase(id) {
+  return request({
+    url: '/official-site/customer-case/detail',
+    method: 'get',
+    params: { id }
   })
 }
 
@@ -21,5 +29,13 @@ export function eidtCustomerCase(data) {
     url: '/official-site/customer-case/edit',
     method: 'post',
     data
+  })
+}
+
+export function customerCaseSearch(name) {
+  return request({
+    url: '/search/customer-case',
+    method: 'get',
+    params: { name }
   })
 }
