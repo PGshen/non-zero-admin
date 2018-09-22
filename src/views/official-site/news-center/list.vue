@@ -1,6 +1,27 @@
 <template>
   <div class="app-container">
 
+    <div class="filter-container">
+      <el-input
+        v-model="listQuery.cond.title"
+        style="width: 200px;"
+        class="filter-item"
+        placeholder="标题"
+        @keyup.enter.native="handleFilter"/>
+
+      <el-select
+        v-model="listQuery.status"
+        style="width: 120px"
+        class="filter-item"
+        placeholder="筛选"
+        @change="handleFilter">
+        <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key"/>
+      </el-select>
+
+      <el-button class="filter-item" type="primary" icon="search" @click="handleFilter">搜索</el-button>
+
+    </div>
+
     <el-table v-loading.body="listLoading" :data="list" border fit highlight-current-row style="width: 100%">
       <el-table-column align="center" label="ID" width="80">
         <template slot-scope="scope">
@@ -53,8 +74,8 @@
     <div class="pagination-container">
       <el-pagination
         :current-page="listQuery.page"
-        :page-sizes="[10,20,30, 50]"
-        :page-size="listQuery.limit"
+        :page-sizes="[5,10,20,30, 50]"
+        :page-size="listQuery.size"
         :total="total"
         background
         layout="total, sizes, prev, pager, next, jumper"
@@ -87,8 +108,11 @@ export default {
       listLoading: true,
       listQuery: {
         page: 1,
-        limit: 10
-      }
+        size: 10,
+        status: '-1',
+        cond: {}
+      },
+      sortOptions: [{ label: '全部', key: '-1' }, { label: '已发布', key: 'published' }, { label: '已删除', key: 'deleted' }, { label: '草稿', key: 'draft' }]
     }
   },
   created() {
@@ -104,11 +128,14 @@ export default {
       })
     },
     handleSizeChange(val) {
-      this.listQuery.limit = val
+      this.listQuery.size = val
       this.getList()
     },
     handleCurrentChange(val) {
       this.listQuery.page = val
+      this.getList()
+    },
+    handleFilter() {
       this.getList()
     }
   }

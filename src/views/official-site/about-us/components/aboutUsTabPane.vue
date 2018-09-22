@@ -2,7 +2,7 @@
   <div>
     <el-table
       v-loading.body="listLoading"
-      :data="firstScreenList"
+      :data="aboutUsList"
       border
       fit
       highlight-current-row
@@ -19,21 +19,15 @@
         </template>
       </el-table-column>
 
-      <el-table-column width="150px" align="left" label="Heading">
+      <el-table-column min-width="200px" align="left" label="Heading">
         <template slot-scope="scope">
           <span>{{ scope.row.heading }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column width="200px" align="left" label="SubHeading">
+      <el-table-column min-width="200px" align="left" label="SubHeading">
         <template slot-scope="scope">
           <span>{{ scope.row.sub_heading }}</span>
-        </template>
-      </el-table-column>
-
-      <el-table-column min-width="250px" align="left" label="Description">
-        <template slot-scope="scope">
-          <span>{{ scope.row.description }}</span>
         </template>
       </el-table-column>
 
@@ -76,7 +70,7 @@
     <div class="pagination-container">
       <el-pagination
         :current-page="listQuery.page"
-        :page-sizes="[5,10,20,30]"
+        :page-sizes="[5,10,20]"
         :page-size="listQuery.size"
         :total="total"
         background
@@ -85,10 +79,10 @@
         @current-change="handleCurrentChange"/>
     </div>
 
-    <el-dialog :title="textMap[dialogStatus]" :close-on-click-modal="false" :visible.sync="dialogFormVisible">
-      <el-form :model="first_screen" class="small-space first_screen-form" label-position="left" label-width="70px">
-        <el-form-item class="first_screen-form-item" label="首屏">
-          <el-select v-model="first_screen.type" placeholder="请选择">
+    <el-dialog :title="textMap[dialogStatus]" :close-on-click-modal="false" :visible.sync="dialogFormVisible" width="80%">
+      <el-form :model="about_us" class="small-space about-us-form" label-position="left" label-width="70px">
+        <el-form-item class="about-us-form-item" label="类别">
+          <el-select v-model="about_us.type" placeholder="请选择">
             <el-option
               v-for="item in options"
               :key="item.value"
@@ -97,36 +91,27 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item class="first_screen-form-item" label="标题">
-          <el-input
-            v-model="first_screen.heading"
-            style="width: 90%;"
-            class="filter-item"
-            placeholder="请输入"/>
-        </el-form-item>
-
-        <el-form-item class="first_screen-form-item" label="副标题">
-          <el-input
-            v-model="first_screen.sub_heading"
-            style="width: 90%;"
-            class="filter-item"
-            placeholder="请输入"/>
-        </el-form-item>
-
-        <el-form-item class="first_screen-form-item" label="启用">
+        <el-form-item class="about-us-form-item" label="启用">
           <el-switch
-            v-model="first_screen.enable"
+            v-model="about_us.enable"
             active-color="#13ce66"
             inactive-color="#ff4949"/>
         </el-form-item>
 
-        <el-form-item class="first_screen-form-item" label="描述">
+        <el-form-item class="about-us-form-item" label="标题">
           <el-input
-            :autosize="{ minRows: 2, maxRows: 4}"
-            v-model="first_screen.description"
+            v-model="about_us.heading"
             style="width: 90%;"
-            type="textarea"
-            placeholder="请输入内容"/>
+            class="filter-item"
+            placeholder="请输入"/>
+        </el-form-item>
+
+        <el-form-item class="about-us-form-item" label="副标题">
+          <el-input
+            v-model="about_us.sub_heading"
+            style="width: 90%;"
+            class="filter-item"
+            placeholder="请输入"/>
         </el-form-item>
 
         <el-form-item style="margin-bottom: 40px;" label="图片">
@@ -138,14 +123,17 @@
             <i class="el-icon-plus"/>
           </el-upload>
           <el-dialog :visible.sync="picVisible">
-            <img :src="first_screen.pic" width="100%" alt="">
+            <img :src="about_us.pic" width="100%" alt="">
           </el-dialog>
         </el-form-item>
+
+        <div class="editor-container">
+          <Tinymce :height="400" v-model="about_us.text" />
+        </div>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button v-if="dialogStatus==='create'" type="primary" @click="create">确 定</el-button>
-        <el-button v-else type="primary" @click="update">确 定</el-button>
+        <el-button type="primary" @click="create">确 定</el-button>
       </div>
     </el-dialog>
 
@@ -156,26 +144,28 @@
 /* eslint-disable semi */
 
 import { mapGetters } from 'vuex'
-import { fetchList } from '@/api/official-site/base-info/firstScreenConf'
+import { fetchList } from '@/api/official-site/about-us/aboutUs'
+import Tinymce from '@/components/Tinymce'
 
 export default {
-  name: 'FSCtabPane',
+  name: 'AboutUstabPane',
+  components: { Tinymce },
   props: {
     type: {
       type: String,
-      default: 'ABOUT_US'
+      default: 'Introduction'
     }
   },
   data() {
     return {
-      firstScreenList: null,
-      first_screen: {
+      aboutUsList: null,
+      about_us: {
         id: null,
         type: '',
         created_time: '',
         heading: '',
         sub_heading: '',
-        description: '',
+        text: '',
         pic: '',
         enable: ''
       },
@@ -188,33 +178,21 @@ export default {
       },
       sortOptions: [{ label: '全部', key: '-1' }, { label: '已启用', key: '1' }, { label: '未启用', key: '0' }],
       textMap: {
-        update: '编辑轮播图',
-        create: '创建轮播图'
+        update: '编辑',
+        create: '创建'
       },
       dialogStatus: '',
       dialogFormVisible: false,
       picVisible: false,
       options: [{
-        value: 'ABOUT_US',
-        label: '关于我们'
+        value: 'INTRODUCTION',
+        label: '企业简介'
       }, {
-        value: 'CONTACT_US',
-        label: '联系我们'
+        value: 'CULTURE',
+        label: '企业文化'
       }, {
-        value: 'NEWS',
-        label: '新闻中心'
-      }, {
-        value: 'PRODUCT',
-        label: '产品中心'
-      }, {
-        value: 'SOLUTION',
-        label: '解决方案'
-      }, {
-        value: 'CASE',
-        label: '客户案例'
-      }, {
-        value: 'RECRUIT',
-        label: '人才招聘'
+        value: 'HONOR',
+        label: '资质荣誉'
       }]
     }
   },
@@ -231,13 +209,13 @@ export default {
       console.log(file, fileList);
     },
     handlePreview(file) {
-      this.first_screen.pic = file.url;
+      this.about_us.pic = file.url;
       this.picVisible = true;
     },
     getList() {
       this.listLoading = true;
       fetchList(this.listQuery).then(response => {
-        this.firstScreenList = response.data.items;
+        this.aboutUsList = response.data.items;
         this.total = response.data.total;
         this.listLoading = false;
       })
@@ -276,12 +254,23 @@ export default {
     padding-bottom: 10px;
   }
 
-  .first_screen-form {
+  .about-us-form {
     width: 92%;
-    margin-left: 8%;
-    .first_screen-form-item {
+    margin-left: 4%;
+    .about-us-form-item {
       display: inline-block;
       width: 100%;
+    }
+  }
+  .editor-container {
+    min-height: 500px;
+    margin: 0 0 30px;
+    .editor-upload-btn-container {
+      text-align: right;
+      margin-right: 10px;
+      .editor-upload-btn {
+        display: inline-block;
+      }
     }
   }
 </style>

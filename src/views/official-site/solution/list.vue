@@ -1,6 +1,27 @@
 <template>
   <div class="app-container">
 
+    <div class="filter-container">
+      <el-input
+        v-model="listQuery.cond.title"
+        style="width: 200px;"
+        class="filter-item"
+        placeholder="标题"
+        @keyup.enter.native="handleFilter"/>
+
+      <el-select
+        v-model="listQuery.status"
+        style="width: 120px"
+        class="filter-item"
+        placeholder="筛选"
+        @change="handleFilter">
+        <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key"/>
+      </el-select>
+
+      <el-button class="filter-item" type="primary" icon="search" @click="handleFilter">搜索</el-button>
+
+    </div>
+
     <el-table v-loading.body="listLoading" :data="list" border fit highlight-current-row style="width: 100%">
       <el-table-column align="center" label="ID" width="80">
         <template slot-scope="scope">
@@ -98,8 +119,11 @@ export default {
       listLoading: true,
       listQuery: {
         page: 1,
-        size: 10
-      }
+        size: 10,
+        status: '-1',
+        cond: {}
+      },
+      sortOptions: [{ label: '全部', key: '-1' }, { label: '已发布', key: 'published' }, { label: '已删除', key: 'deleted' }, { label: '草稿', key: 'draft' }]
     }
   },
   created() {
@@ -120,6 +144,9 @@ export default {
     },
     handleCurrentChange(val) {
       this.listQuery.page = val
+      this.getList()
+    },
+    handleFilter() {
       this.getList()
     }
   }

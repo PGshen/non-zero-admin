@@ -41,8 +41,9 @@ for (let i = 0; i < count; i++) {
 
 export default {
   getList: config => {
-    const { page = 1, size = 5 } = param2Obj(config.url)
+    const { status, page = 1, size = 5 } = param2Obj(config.url)
     const mockList = List.filter(item => {
+      if (status && status !== '-1' && item.is_enable !== status) return false
       return true
     })
 

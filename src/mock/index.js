@@ -8,6 +8,8 @@ import firstScreenConfAPI from './official-site/base-info/firstScreenConf'
 import product from './official-site/product/product'
 import solution from './official-site/solution/solution'
 import customerCase from './official-site/customer-case/customerCase'
+import contactUs from './official-site/contact-us/contactUs'
+import aboutUs from './official-site/about-us/aboutUs'
 
 // Mock.setup({
 //   timeout: '350-600'
@@ -47,19 +49,28 @@ Mock.mock(/\/base-info\/first-screen\/update/, 'post', firstScreenConfAPI.update
 // 产品
 Mock.mock(/\/official-site\/product\/list/, 'get', product.getList)
 Mock.mock(/\/official-site\/product\/detail/, 'get', product.getProduct)
-Mock.mock(/\/official-site\/product\/create/, 'get', product.createProduct)
-Mock.mock(/\/official-site\/product\/update/, 'get', product.updateProduct)
+Mock.mock(/\/official-site\/product\/create/, 'post', product.createProduct)
+Mock.mock(/\/official-site\/product\/update/, 'post', product.updateProduct)
 
 // 解决方案
 Mock.mock(/\/official-site\/solution\/list/, 'get', solution.getList)
 Mock.mock(/\/official-site\/solution\/detail/, 'get', solution.getSolution)
-Mock.mock(/\/official-site\/solution\/create/, 'get', solution.createSolution)
-Mock.mock(/\/official-site\/solution\/update/, 'get', solution.updateSolution)
+Mock.mock(/\/official-site\/solution\/create/, 'post', solution.createSolution)
+Mock.mock(/\/official-site\/solution\/update/, 'post', solution.updateSolution)
 
 // 客户案例
 Mock.mock(/\/official-site\/customer-case\/list/, 'get', customerCase.getList)
 Mock.mock(/\/official-site\/customer-case\/detail/, 'get', customerCase.getCustomerCase)
-Mock.mock(/\/official-site\/customer-case\/create/, 'get', customerCase.createCustomerCase)
-Mock.mock(/\/official-site\/customer-case\/update/, 'get', customerCase.updateCustomerCase)
+Mock.mock(/\/official-site\/customer-case\/create/, 'post', customerCase.createCustomerCase)
+Mock.mock(/\/official-site\/customer-case\/update/, 'post', customerCase.updateCustomerCase)
 
+// 关于我们
+Mock.mock(/\/official-site\/about-us\/list/, 'get', aboutUs.getAboutUs)
+Mock.mock(/\/official-site\/about-us\/create/, 'post', aboutUs.createAboutUs)
+Mock.mock(/\/official-site\/about-us\/update/, 'post', aboutUs.updateAboutUs)
+
+// 联系我们
+Mock.mock(/\/official-site\/contact-us\/list/, 'get', contactUs.getContactUs)
+Mock.mock(/\/official-site\/contact-us\/create/, 'post', contactUs.createContactUs)
+Mock.mock(/\/official-site\/contact-us\/update/, 'post', contactUs.updateContactUs)
 export default Mock
