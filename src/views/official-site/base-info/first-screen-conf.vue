@@ -20,7 +20,7 @@
     <el-dialog :title="textMap[dialogStatus]" :close-on-click-modal="false" :visible.sync="dialogFormVisible">
       <el-form :model="first_screen" class="small-space first_screen-form" label-position="left" label-width="70px">
         <el-form-item class="first_screen-form-item" label="首屏">
-          <el-select v-model="type" placeholder="请选择">
+          <el-select v-model="first_screen.type" placeholder="请选择">
             <el-option
               v-for="item in options"
               :key="item.value"
@@ -87,7 +87,7 @@
 import fscTabPane from './components/fscTabPane'
 
 export default {
-  name: 'ClassConf',
+  name: 'FirstScreenConf',
   components: { fscTabPane },
   data() {
     return {
