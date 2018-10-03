@@ -15,7 +15,7 @@
       :width="300"
       :height="300"
       :key="imagecropperKey"
-      url="https://httpbin.org/post"
+      url="/official/website/base/info/upload"
       lang-type="en"
       @close="close"
       @crop-upload-success="cropSuccess"/>
@@ -33,14 +33,14 @@ export default {
     return {
       imagecropperShow: false,
       imagecropperKey: 0,
-      image: 'https://wpimg.wallstcn.com/577965b9-bb9e-4e02-9f0c-095b41417191'
+      image: 'http://localhost:8088/upload/avatar/20181002/225201316.png'
     }
   },
   methods: {
     cropSuccess(resData) {
       this.imagecropperShow = false
       this.imagecropperKey = this.imagecropperKey + 1
-      this.image = resData.files.avatar
+      this.image = 'http://localhost:8088/' + resData.data
     },
     close() {
       this.imagecropperShow = false
