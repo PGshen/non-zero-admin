@@ -2,7 +2,7 @@
   <div class="createProduct-container">
     <el-form ref="productForm" :model="productForm" :rules="rules" class="form-container">
 
-      <sticky :class-name="'sub-navbar '+productForm.status">
+      <sticky :class-name="'sub-navbar '+productForm.isEnable">
         <el-button v-loading="loading" style="margin-left: 10px;" type="success" @click="submitForm">发布
         </el-button>
         <el-button v-loading="loading" type="warning" @click="draftForm">草稿</el-button>
@@ -13,37 +13,41 @@
 
           <el-col :span="24">
             <el-form-item style="margin-bottom: 40px;" prop="title">
-              <MDinput v-model="productForm.first_heading" :maxlength="100" name="name" required>
+              <MDinput v-model="productForm.firstHeading" :maxlength="100" name="name" required>
                 标题
               </MDinput>
             </el-form-item>
 
             <el-row>
-              <el-col :span="12">
+              <el-col :span="12" :xs="12" :sm="24" :lg="12">
                 <el-form-item style="margin-bottom: 40px;" label-width="80px" label="二级标题:">
-                  <el-input :rows="1" v-model="productForm.secondary_heading" type="textarea" class="article-textarea" autosize placeholder="请输入内容"/>
+                  <el-input :rows="1" v-model="productForm.secondaryHeading" type="textarea" class="article-textarea" autosize placeholder="请输入内容"/>
                 </el-form-item>
               </el-col>
-              <el-col :span="12">
+              <el-col :span="12" :xs="12" :sm="24" :lg="12">
                 <el-form-item style="margin-bottom: 40px;" label-width="80px" label="三级标题:">
-                  <el-input :rows="1" v-model="productForm.tertiary_heading" type="textarea" class="article-textarea" autosize placeholder="请输入内容"/>
+                  <el-input :rows="1" v-model="productForm.tertiaryHeading" type="textarea" class="article-textarea" autosize placeholder="请输入内容"/>
                 </el-form-item>
               </el-col>
             </el-row>
 
             <div class="productInfo-container">
               <el-row>
-                <el-col :span="12">
-                  <el-form-item label-width="80px" label="产品类别:" class="productInfo-container-item">
-                    <el-select v-model="productForm.product_class" :remote-method="getRemoteProductClassList" filterable remote placeholder="搜索产品类别">
-                      <el-option v-for="(item,index) in productClassOptions" :key="item+index" :label="item" :value="item"/>
+                <el-col :span="12" :xs="12" :sm="24" :lg="12">
+                  <el-form-item label-width="80px" label="类别:" class="productInfo-container-item">
+                    <el-select v-model="productForm.productClass" placeholder="请选择">
+                      <el-option
+                        v-for="item in productClassOptions"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value"/>
                     </el-select>
                   </el-form-item>
                 </el-col>
 
-                <el-col :span="12">
-                  <el-form-item label-width="80px" label="创建时间:" class="productInfo-container-item">
-                    <el-date-picker v-model="productForm.create_time" type="datetime" format="yyyy-MM-dd HH:mm:ss" placeholder="选择日期时间"/>
+                <el-col :span="12" :xs="12" :sm="24" :lg="12" >
+                  <el-form-item label-width="80px" label="创建时间:" class="postInfo-container-item">
+                    <el-date-picker v-model="productForm.createdTime" type="datetime" format="yyyy-MM-dd HH:mm:ss" value-format="yyyy-MM-dd HH:mm:ss" placeholder="选择日期时间"/>
                   </el-form-item>
                 </el-col>
               </el-row>
@@ -51,31 +55,29 @@
           </el-col>
         </el-row>
 
-        <el-form-item style="margin-bottom: 40px;" label-width="80px" label="产品摘要:">
-          <el-input :rows="1" v-model="productForm.product_synopsis" type="textarea" class="article-textarea" autosize placeholder="请输入内容"/>
+        <el-form-item style="margin-bottom: 40px;" label-width="80px" label="摘要:">
+          <el-input :rows="1" v-model="productForm.productSynopsis" type="textarea" class="article-textarea" autosize placeholder="请输入内容"/>
+          <span v-show="synopsisLength" class="word-counter">{{ synopsisLength }}字</span>
         </el-form-item>
 
-        <el-row>
-          <el-col :xs="24" :sm="24" :lg="12" style="padding-left: 0">
-            <div class="input-wrapper">
-              <el-form-item style="margin-bottom: 40px;" label-width="80px" label="产品图片:">
-                <el-upload
-                  :on-preview="handlePreview"
-                  :on-remove="handleRemove"
-                  action="https://jsonplaceholder.typicode.com/posts/"
-                  list-type="picture-card">
-                  <i class="el-icon-plus"/>
-                </el-upload>
-                <el-dialog :visible.sync="picVisible">
-                  <img :src="productForm.product_pic" width="100%" alt="">
-                </el-dialog>
-              </el-form-item>
-            </div>
-          </el-col>
-        </el-row>
+        <el-form-item style="margin-bottom: 40px;" label-width="80px" label="图片:">
+          <el-upload
+            :on-preview="handlePreview"
+            :on-remove="handleRemove"
+            :on-success="handleSuccess"
+            :headers="myHeaders"
+            :file-list="fileList"
+            action="http://localhost:8088/official/website/product/upload"
+            list-type="picture-card">
+            <i class="el-icon-plus"/>
+          </el-upload>
+          <el-dialog :visible.sync="picVisible">
+            <img :src="productForm.productPic" width="100%" alt="">
+          </el-dialog>
+        </el-form-item>
 
         <div class="editor-container">
-          <Tinymce ref="editor" :height="400" v-model="productForm.product_text" />
+          <Tinymce ref="editor" :height="400" v-model="productForm.productText" />
         </div>
       </div>
     </el-form>
@@ -87,20 +89,21 @@
 import Tinymce from '@/components/Tinymce'
 import MDinput from '@/components/MDinput'
 import Sticky from '@/components/Sticky' // 粘性header组件
-import { fetchProduct, productSearch } from '@/api/official-site/product/product'
+import { getToken } from '@/utils/auth'
+import { fetchClazzList } from '@/api/official-site/base-info/clazzConf'
+import { fetchProduct, createProduct, updateProduct } from '@/api/official-site/product/product'
 
 const defaultForm = {
   id: undefined,
-  create_time: undefined,
-  update_time: undefined,
-  first_heading: '',
-  secondary_heading: '',
-  tertiary_heading: '',
-  product_synopsis: '',
-  product_text: '',
-  product_pic: '',
-  is_enable: 'draft',
-  create_user: ''
+  createdTime: undefined,
+  firstHeading: '',
+  secondaryHeading: '',
+  tertiaryHeading: '',
+  productSynopsis: '',
+  productText: '',
+  productPic: '',
+  productClass: '',
+  isEnable: 'draft'
 }
 
 export default {
@@ -128,20 +131,30 @@ export default {
       productForm: Object.assign({}, defaultForm),
       loading: false,
       productClassOptions: [], // 从数据库获取类别
+      myHeaders: {
+        'x-auth-token': getToken() // 文件上传携带token
+      },
+      editFlag: this.isEdit,
+      fileList: [],
       picVisible: false,
       rules: {
-        first_heading: [{ validator: validateRequire }],
-        product_text: [{ validator: validateRequire }],
-        product_pic: [{ validator: validateRequire }]
+        firstHeading: [{ required: true, trigger: 'blur', validator: validateRequire }],
+        productClass: [{ required: true, trigger: 'blur', validator: validateRequire }],
+        productText: [{ required: true, trigger: 'blur', validator: validateRequire }]
       }
     }
   },
   computed: {
-    contentShortLength() {
-      return this.productForm.product_text.length
+    synopsisLength() {
+      return this.productForm.productSynopsis.length
     }
   },
   created() {
+    fetchClazzList({ clazzName: 'PRODUCT' }).then(response => {
+      if (response.data.code === 20000) {
+        this.productClassOptions = response.data.data
+      }
+    })
     if (this.isEdit) {
       const id = this.$route.params && this.$route.params.id
       this.fetchData(id)
@@ -154,57 +167,127 @@ export default {
       console.log(file, fileList)
     },
     handlePreview(file) {
-      this.productForm.product_pic = file.url
+      console.log(file)
+      this.productForm.productPic = file.response.data
       this.picVisible = true
+    },
+    handleSuccess(res, file, fileList) {
+      if (res.code === 20000) {
+        this.productForm.productPic = res.data
+      }
     },
     fetchData(id) {
       fetchProduct(id).then(response => {
-        this.productForm = response.data
+        this.productForm = response.data.data
+        this.fileList.splice(0, this.fileList.length) // 清空
+        this.fileList.push({ name: response.data.data.id, url: response.data.data.productPic })
       }).catch(err => {
         console.log(err)
       })
     },
     submitForm() {
-      this.productForm.create_time = parseInt(this.create_time / 1000)
       console.log(this.productForm)
       this.$refs.productForm.validate(valid => {
         if (valid) {
           this.loading = true
-          this.$notify({
-            title: '成功',
-            message: '新增产品成功',
-            type: 'success',
-            duration: 2000
-          })
-          this.productForm.status = 'published'
+          this.productForm.isEnable = '1' // published
+          if (!this.editFlag) {
+            createProduct(this.productForm).then(response => {
+              if (response.data.code === 20000) {
+                this.productForm.id = response.data.data.id
+                this.editFlag = true // 第一次点击发布后,isEdit标志修改为false,避免后续点击发布按钮重新添加为新的文章
+                this.$notify({
+                  title: '成功',
+                  message: '发布产品成功',
+                  type: 'success',
+                  duration: 2000
+                })
+              } else {
+                this.$notify({
+                  title: '失败',
+                  message: '发布产品失败',
+                  type: 'fail',
+                  duration: 2000
+                })
+              }
+            })
+          } else {
+            updateProduct(this.productForm).then(response => {
+              if (response.data.code === 20000) {
+                this.$notify({
+                  title: '成功',
+                  message: '更新产品成功',
+                  type: 'success',
+                  duration: 2000
+                })
+              } else {
+                this.$notify({
+                  title: '失败',
+                  message: '更新产品失败',
+                  type: 'fail',
+                  duration: 2000
+                })
+              }
+            })
+          }
           this.loading = false
         } else {
           console.log('error submit!!')
+          this.$message.error('信息填写有错误')
           return false
         }
       })
     },
     draftForm() {
-      if (this.productForm.first_heading.length === 0 || this.productForm.product_text.length === 0) {
+      if (this.productForm.productText.length === 0 || this.productForm.firstHeading.length === 0) {
         this.$message({
           message: '请填写必要的标题和内容',
           type: 'warning'
         })
         return
       }
-      this.$message({
-        message: '保存成功',
-        type: 'success',
-        showClose: true,
-        duration: 1000
-      })
-      this.productForm.status = 'draft'
-    },
-    getRemoteProductClassList(query) {
-      productSearch(query).then(response => {
-        if (!response.data.items) return
-        this.productClassOptions = response.data.items.map(v => v.name)
-      })
+      this.loading = true
+      this.productForm.isEnable = '0' // draft
+      if (!this.editFlag) {
+        createProduct(this.productForm).then(response => {
+          this.productForm.id = response.data.data.id
+          this.editFlag = true // 第一次点击发布后,isEdit标志修改为false,避免后续点击发布按钮重新添加为新的文章
+          if (response.data.code === 20000) {
+            this.$notify({
+              title: '成功',
+              message: '保存产品草稿成功',
+              type: 'success',
+              duration: 2000
+            })
+          } else {
+            this.$notify({
+              title: '失败',
+              message: '保存产品草稿失败',
+              type: 'fail',
+              duration: 2000
+            })
+          }
+        })
+      } else {
+        updateProduct(this.productForm).then(response => {
+          if (response.data.code === 20000) {
+            this.$notify({
+              title: '成功',
+              message: '更新产品草稿成功',
+              type: 'success',
+              duration: 2000
+            })
+          } else {
+            this.$notify({
+              title: '失败',
+              message: '更新产品草稿失败',
+              type: 'fail',
+              duration: 2000
+            })
+          }
+        })
+      }
+      this.loading = false
     }
   }
 }

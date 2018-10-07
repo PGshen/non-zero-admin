@@ -3,9 +3,6 @@
     <el-form ref="postForm" :model="postForm" :rules="rules" class="form-container">
 
       <sticky :class-name="'sub-navbar '+postForm.status">
-        <CommentDropdown v-model="postForm.comment_disabled" />
-        <PlatformDropdown v-model="postForm.platforms" />
-        <SourceUrlDropdown v-model="postForm.source_uri" />
         <el-button v-loading="loading" style="margin-left: 10px;" type="success" @click="submitForm">发布
         </el-button>
         <el-button v-loading="loading" type="warning" @click="draftForm">草稿</el-button>
@@ -23,29 +20,38 @@
 
             <div class="postInfo-container">
               <el-row>
-                <el-col :span="8">
-                  <el-form-item label-width="45px" label="作者:" class="postInfo-container-item">
-                    <el-select v-model="postForm.author" :remote-method="getRemoteUserList" filterable remote placeholder="搜索用户">
-                      <el-option v-for="(item,index) in userListOptions" :key="item+index" :label="item" :value="item"/>
+                <el-col :span="12" :xs="12" :sm="24" :lg="12">
+                  <el-form-item label-width="80px" label="类别:" class="productInfo-container-item">
+                    <el-select v-model="postForm.newsClass" placeholder="请选择">
+                      <el-option
+                        v-for="item in newsClassOptions"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value"/>
                     </el-select>
                   </el-form-item>
                 </el-col>
 
-                <el-col :span="10">
+                <el-col :span="12" :xs="12" :sm="24" :lg="12" >
                   <el-form-item label-width="80px" label="发布时间:" class="postInfo-container-item">
-                    <el-date-picker v-model="postForm.display_time" type="datetime" format="yyyy-MM-dd HH:mm:ss" placeholder="选择日期时间"/>
+                    <el-date-picker v-model="postForm.releaseTime" type="datetime" format="yyyy-MM-dd HH:mm:ss" value-format="yyyy-MM-dd HH:mm:ss" placeholder="选择日期时间"/>
+                  </el-form-item>
+                </el-col>
+              </el-row>
+            </div>
+            <div class="productInfo-container">
+              <el-row>
+                <el-col :span="12" :xs="12" :sm="24" :lg="12">
+                  <el-form-item label-width="80px" label="作者:" class="postInfo-container-item">
+                    <!--<el-input v-model="postForm.author" placeholder="请输入作者"/>-->
+                    <el-input :rows="1" v-model="postForm.author" type="textarea" class="article-textarea" autosize placeholder="请输入作者"/>
                   </el-form-item>
                 </el-col>
 
-                <el-col :span="6">
-                  <el-form-item label-width="60px" label="重要性:" class="postInfo-container-item">
-                    <el-rate
-                      v-model="postForm.importance"
-                      :max="3"
-                      :colors="['#99A9BF', '#F7BA2A', '#FF9900']"
-                      :low-threshold="1"
-                      :high-threshold="3"
-                      style="margin-top:8px;"/>
+                <el-col :span="12" :xs="12" :sm="24" :lg="12" >
+                  <el-form-item label-width="80px" label="新闻标签:" class="productInfo-container-item">
+                    <!--<el-date-picker v-model="postForm.tags" type="datetime" format="yyyy-MM-dd HH:mm:ss" placeholder="选择日期时间"/>-->
+                    <el-input :rows="1" v-model="postForm.tags" type="textarea" class="article-textarea" autosize placeholder="请输入标签,多个标签用逗号隔开"/>
                   </el-form-item>
                 </el-col>
               </el-row>
@@ -53,17 +59,29 @@
           </el-col>
         </el-row>
 
-        <el-form-item style="margin-bottom: 40px;" label-width="45px" label="摘要:">
-          <el-input :rows="1" v-model="postForm.content_short" type="textarea" class="article-textarea" autosize placeholder="请输入内容"/>
-          <span v-show="contentShortLength" class="word-counter">{{ contentShortLength }}字</span>
+        <el-form-item style="margin-bottom: 40px;" label-width="80px" label="摘要:">
+          <el-input :rows="1" v-model="postForm.synopsis" type="textarea" class="article-textarea" autosize placeholder="请输入内容"/>
+          <span v-show="synopsisLength" class="word-counter">{{ synopsisLength }}字</span>
+        </el-form-item>
+
+        <el-form-item style="margin-bottom: 40px;" label-width="80px" label="图片:">
+          <el-upload
+            :on-preview="handlePreview"
+            :on-remove="handleRemove"
+            :on-success="handleSuccess"
+            :headers="myHeaders"
+            :file-list="fileList"
+            action="http://localhost:8088/official/website/news/upload"
+            list-type="picture-card">
+            <i class="el-icon-plus"/>
+          </el-upload>
+          <el-dialog :visible.sync="picVisible">
+            <img :src="postForm.titlePic" width="100%" alt="">
+          </el-dialog>
         </el-form-item>
 
         <div class="editor-container">
           <Tinymce ref="editor" :height="400" v-model="postForm.content" />
-        </div>
-
-        <div style="margin-bottom: 20px;">
-          <Upload v-model="postForm.image_uri" />
         </div>
       </div>
     </el-form>
@@ -77,27 +95,27 @@ import Upload from '@/components/Upload/singleImage3'
 import MDinput from '@/components/MDinput'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import { validateURL } from '@/utils/validate'
-import { fetchArticle } from '@/api/article'
-import { userSearch } from '@/api/remoteSearch'
-import { CommentDropdown, PlatformDropdown, SourceUrlDropdown } from './Dropdown'
+import { getToken } from '@/utils/auth'
+import { fetchClazzList } from '@/api/official-site/base-info/clazzConf'
+import { fetchNews, createNews, updateNews } from '@/api/official-site/news-center/news'
 
 const defaultForm = {
   status: 'draft',
   title: '', // 文章题目
   content: '', // 文章内容
-  content_short: '', // 文章摘要
-  source_uri: '', // 文章外链
-  image_uri: '', // 文章图片
-  display_time: undefined, // 前台展示时间
+  synopsis: '', // 文章摘要
+  titlePic: '', // 文章图片
+  releaseTime: '', // 前台展示时间
   id: undefined,
-  platforms: ['a-platform'],
-  comment_disabled: false,
-  importance: 0
+  newsClass: '', // 新闻类别
+  tags: '', // 新闻标签
+  author: '', // 新闻作者
+  readingTimes: 0
 }
 
 export default {
   name: 'ArticleDetail',
-  components: { Tinymce, MDinput, Upload, Sticky, CommentDropdown, PlatformDropdown, SourceUrlDropdown },
+  components: { Tinymce, MDinput, Upload, Sticky },
   props: {
     isEdit: {
       type: Boolean,
@@ -134,7 +152,13 @@ export default {
     return {
       postForm: Object.assign({}, defaultForm),
       loading: false,
-      userListOptions: [],
+      newsClassOptions: [],
+      myHeaders: {
+        'x-auth-token': getToken() // 文件上传携带token
+      },
+      editFlag: this.isEdit,
+      fileList: [],
+      picVisible: false,
       rules: {
         image_uri: [{ validator: validateRequire }],
         title: [{ validator: validateRequire }],
@@ -144,11 +168,16 @@ export default {
     }
   },
   computed: {
-    contentShortLength() {
-      return this.postForm.content_short.length
+    synopsisLength() {
+      return this.postForm.synopsis.length
     }
   },
   created() {
+    fetchClazzList({ clazzName: 'NEWS' }).then(response => {
+      if (response.data.code === 20000) {
+        this.newsClassOptions = response.data.data
+      }
+    })
     if (this.isEdit) {
       const id = this.$route.params && this.$route.params.id
       this.fetchData(id)
@@ -157,32 +186,80 @@ export default {
     }
   },
   methods: {
+    handleRemove(file, fileList) {
+      console.log(file, fileList)
+    },
+    handlePreview(file) {
+      console.log(file)
+      this.postForm.titlePic = file.response.data
+      this.picVisible = true
+    },
+    handleSuccess(res, file, fileList) {
+      if (res.code === 20000) {
+        this.postForm.titlePic = res.data
+      }
+    },
     fetchData(id) {
-      fetchArticle(id).then(response => {
-        this.postForm = response.data
+      fetchNews(id).then(response => {
+        this.postForm = response.data.data
+        this.fileList.splice(0, this.fileList.length) // 清空
+        this.fileList.push({ name: response.data.data.id, url: response.data.data.titlePic })
         // Just for test
-        this.postForm.title += `   Article Id:${this.postForm.id}`
-        this.postForm.content_short += `   Article Id:${this.postForm.id}`
+        // this.postForm.title += `   Article Id:${this.postForm.id}`
+        // this.postForm.synopsis += `   Article Id:${this.postForm.id}`
       }).catch(err => {
         console.log(err)
       })
     },
     submitForm() {
-      this.postForm.display_time = parseInt(this.display_time / 1000)
       console.log(this.postForm)
       this.$refs.postForm.validate(valid => {
         if (valid) {
           this.loading = true
-          this.$notify({
-            title: '成功',
-            message: '发布文章成功',
-            type: 'success',
-            duration: 2000
-          })
-          this.postForm.status = 'published'
+          this.postForm.status = '1' // published
+          if (!this.editFlag) {
+            createNews(this.postForm).then(response => {
+              if (response.data.code === 20000) {
+                this.postForm.id = response.data.data.id
+                this.editFlag = true // 第一次点击发布后,isEdit标志修改为false,避免后续点击发布按钮重新添加为新的文章
+                this.$notify({
+                  title: '成功',
+                  message: '发布文章成功',
+                  type: 'success',
+                  duration: 2000
+                })
+              } else {
+                this.$notify({
+                  title: '成功',
+                  message: '发布文章成功',
+                  type: 'success',
+                  duration: 2000
+                })
+              }
+            })
+          } else {
+            updateNews(this.postForm).then(response => {
+              if (response.data.code === 20000) {
+                this.$notify({
+                  title: '成功',
+                  message: '更新文章成功',
+                  type: 'success',
+                  duration: 2000
+                })
+              } else {
+                this.$notify({
+                  title: '成功',
+                  message: '更新文章成功',
+                  type: 'success',
+                  duration: 2000
+                })
+              }
+            })
+          }
           this.loading = false
         } else {
           console.log('error submit!!')
+          this.$message.error('信息填写有错误')
           return false
         }
       })
@@ -195,19 +272,48 @@ export default {
         })
         return
       }
-      this.$message({
-        message: '保存成功',
-        type: 'success',
-        showClose: true,
-        duration: 1000
-      })
-      this.postForm.status = 'draft'
-    },
-    getRemoteUserList(query) {
-      userSearch(query).then(response => {
-        if (!response.data.items) return
-        this.userListOptions = response.data.items.map(v => v.name)
-      })
+      this.loading = true
+      this.postForm.status = '0' // draft
+      if (!this.editFlag) {
+        createNews(this.postForm).then(response => {
+          this.postForm.id = response.data.data.id
+          this.editFlag = true // 第一次点击发布后,isEdit标志修改为false,避免后续点击发布按钮重新添加为新的文章
+          if (response.data.code === 20000) {
+            this.$notify({
+              title: '成功',
+              message: '保存草稿成功',
+              type: 'success',
+              duration: 2000
+            })
+          } else {
+            this.$notify({
+              title: '成功',
+              message: '保存草稿成功',
+              type: 'success',
+              duration: 2000
+            })
+          }
+        })
+      } else {
+        updateNews(this.postForm).then(response => {
+          if (response.data.code === 20000) {
+            this.$notify({
+              title: '成功',
+              message: '更新草稿成功',
+              type: 'success',
+              duration: 2000
+            })
+          } else {
+            this.$notify({
+              title: '成功',
+              message: '更新草稿成功',
+              type: 'success',
+              duration: 2000
+            })
+          }
+        })
+      }
+      this.loading = false
     }
   }
 }
