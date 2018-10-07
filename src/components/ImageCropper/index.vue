@@ -824,7 +824,7 @@ export default {
       that.loading = 1
       that.setStep(3)
       request({
-        url,
+        url: url,
         method: 'post',
         data: fmData
       }).then(resData => {

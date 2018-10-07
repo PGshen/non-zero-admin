@@ -7,15 +7,15 @@
       fit
       highlight-current-row
       style="width: 100%">
-      <el-table-column align="center" label="ID" width="60px">
-        <template slot-scope="scope">
-          <span>{{ scope.row.id }}</span>
-        </template>
+      <el-table-column align="center" label="ID" width="60px" type="index">
+        <!--<template slot-scope="scope">-->
+        <!--<span>{{ scope.row.id }}</span>-->
+        <!--</template>-->
       </el-table-column>
 
       <el-table-column width="140px" align="center" label="Date">
         <template slot-scope="scope">
-          <span>{{ scope.row.created_time | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+          <span>{{ scope.row.updateTime | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
         </template>
       </el-table-column>
 
@@ -27,7 +27,7 @@
 
       <el-table-column width="200px" align="left" label="SubHeading">
         <template slot-scope="scope">
-          <span>{{ scope.row.sub_heading }}</span>
+          <span>{{ scope.row.subHeading }}</span>
         </template>
       </el-table-column>
 
@@ -52,16 +52,16 @@
             @click="handleUpdate(scope.row)">编辑
           </el-button>
           <el-button
-            v-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:user:ban') !== -1 && scope.row.enable === 1"
+            v-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:user:ban') !== -1 && scope.row.isEnable === '1'"
             size="mini"
             type="warning"
-            @click="handleUpdate(scope.row)">禁用
+            @click="checkoutStatus(scope.row)">禁用
           </el-button>
           <el-button
-            v-else-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:user:ban') !== -1 && scope.row.enable === 0"
+            v-else-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:user:ban') !== -1 && scope.row.isEnable === '0'"
             size="mini"
             type="success"
-            @click="handleUpdate(scope.row)">启用
+            @click="checkoutStatus(scope.row)">启用
           </el-button>
           <el-button
             v-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:user:delete') !== -1"
@@ -88,13 +88,22 @@
     <el-dialog :title="textMap[dialogStatus]" :close-on-click-modal="false" :visible.sync="dialogFormVisible">
       <el-form :model="first_screen" class="small-space first_screen-form" label-position="left" label-width="70px">
         <el-form-item class="first_screen-form-item" label="首屏">
-          <el-select v-model="first_screen.type" placeholder="请选择">
+          <el-select v-model="first_screen.firstScreenClass" placeholder="请选择">
             <el-option
-              v-for="item in options"
+              v-for="item in clazzOptions"
               :key="item.value"
               :label="item.label"
               :value="item.value"/>
           </el-select>
+        </el-form-item>
+
+        <el-form-item class="first_screen-form-item" label="启用">
+          <el-switch
+            v-model="first_screen.isEnable"
+            active-color="#13ce66"
+            inactive-color="#ff4949"
+            active-value="1"
+            inactive-value="0"/>
         </el-form-item>
 
         <el-form-item class="first_screen-form-item" label="标题">
@@ -107,17 +116,10 @@
 
         <el-form-item class="first_screen-form-item" label="副标题">
           <el-input
-            v-model="first_screen.sub_heading"
+            v-model="first_screen.subHeading"
             style="width: 90%;"
             class="filter-item"
             placeholder="请输入"/>
-        </el-form-item>
-
-        <el-form-item class="first_screen-form-item" label="启用">
-          <el-switch
-            v-model="first_screen.enable"
-            active-color="#13ce66"
-            inactive-color="#ff4949"/>
         </el-form-item>
 
         <el-form-item class="first_screen-form-item" label="描述">
@@ -133,7 +135,10 @@
           <el-upload
             :on-preview="handlePreview"
             :on-remove="handleRemove"
-            action="https://jsonplaceholder.typicode.com/posts/"
+            :on-success="handleSuccess"
+            :file-list="fileList"
+            :headers="myHeaders"
+            action="http://localhost:8088/official/website/first/screen/upload"
             list-type="picture-card">
             <i class="el-icon-plus"/>
           </el-upload>
@@ -144,8 +149,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button v-if="dialogStatus==='create'" type="primary" @click="create">确 定</el-button>
-        <el-button v-else type="primary" @click="update">确 定</el-button>
+        <el-button type="primary" @click="update">确 定</el-button>
       </div>
     </el-dialog>
 
@@ -156,7 +160,9 @@
 /* eslint-disable semi */
 
 import { mapGetters } from 'vuex'
-import { fetchList } from '@/api/official-site/base-info/firstScreenConf'
+import { fetchList, updateFirstScreen, deleteFirstScreen, checkoutStatusFirstScreen } from '@/api/official-site/base-info/firstScreenConf'
+import { fetchClazzList } from '@/api/official-site/base-info/clazzConf';
+import { getToken } from '@/utils/auth'
 
 export default {
   name: 'FSCtabPane',
@@ -171,51 +177,37 @@ export default {
       firstScreenList: null,
       first_screen: {
         id: null,
-        type: '',
-        created_time: '',
+        firstScreenClass: '',
+        updateTime: '',
         heading: '',
-        sub_heading: '',
+        subHeading: '',
         description: '',
         pic: '',
-        enable: ''
+        isEnable: ''
       },
       total: null,
       listLoading: true,
       listQuery: {
         page: 1,
         size: 5,
-        type: this.type
+        order: 'updateTime',
+        cond: {
+          firstScreenClass: this.type
+        }
       },
+      myHeaders: {
+        'x-auth-token': getToken() // 文件上传携带token
+      },
+      fileList: [],
       sortOptions: [{ label: '全部', key: '-1' }, { label: '已启用', key: '1' }, { label: '未启用', key: '0' }],
       textMap: {
-        update: '编辑轮播图',
-        create: '创建轮播图'
+        update: '编辑',
+        create: '创建'
       },
       dialogStatus: '',
       dialogFormVisible: false,
       picVisible: false,
-      options: [{
-        value: 'ABOUT_US',
-        label: '关于我们'
-      }, {
-        value: 'CONTACT_US',
-        label: '联系我们'
-      }, {
-        value: 'NEWS',
-        label: '新闻中心'
-      }, {
-        value: 'PRODUCT',
-        label: '产品中心'
-      }, {
-        value: 'SOLUTION',
-        label: '解决方案'
-      }, {
-        value: 'CASE',
-        label: '客户案例'
-      }, {
-        value: 'RECRUIT',
-        label: '人才招聘'
-      }]
+      clazzOptions: null
     }
   },
   computed: {
@@ -224,23 +216,47 @@ export default {
     ])
   },
   created() {
-    this.getList()
+    fetchClazzList({ clazzName: 'FIRST_SCREEN' }).then(response => {
+      if (response.data.code === 20000) {
+        this.clazzOptions = response.data.data;
+      }
+    });
+    this.getList();
   },
   methods: {
     handleRemove(file, fileList) {
       console.log(file, fileList);
     },
     handlePreview(file) {
-      this.first_screen.pic = file.url;
+      console.log(file);
+      this.first_screen.pic = file.response.data;
       this.picVisible = true;
+    },
+    handleSuccess(res, file, fileList) {
+      if (res.code === 20000) {
+        this.first_screen.pic = res.data;
+      }
     },
     getList() {
       this.listLoading = true;
       fetchList(this.listQuery).then(response => {
-        this.firstScreenList = response.data.items;
-        this.total = response.data.total;
+        this.firstScreenList = response.data.data.list;
+        this.total = response.data.data.total;
+        this.page = response.data.data.pages;
         this.listLoading = false;
       })
+    },
+    resetFirstScreen() {
+      this.first_screen = {
+        id: null,
+        firstScreenClass: '',
+        updateTime: '',
+        heading: '',
+        subHeading: '',
+        description: '',
+        pic: '',
+        isEnable: ''
+      }
     },
     handleSizeChange(val) {
       this.listQuery.size = val;
@@ -253,20 +269,84 @@ export default {
     handleFilter() {
       this.getList()
     },
-    handleCreate() {
-      this.dialogStatus = 'create';
-      this.dialogFormVisible = true
-    },
-    handleUpdate() {
+    handleUpdate(row) {
+      this.first_screen = Object.assign({}, row);
+      this.first_screen.firstScreenClass = row.firstScreenClass;
+      this.fileList.splice(0, this.fileList.length); // 清空
+      this.fileList.push({ name: row.id, url: row.pic });
       this.dialogStatus = 'update';
       this.dialogFormVisible = true
     },
-    handleDelete() {},
+    handleDelete(row) {
+      deleteFirstScreen(row.id).then(response => {
+        if (response.data.status) {
+          this.$notify({
+            title: '成功',
+            message: '删除成功',
+            type: 'success',
+            duration: 2000
+          });
+          this.getList()
+        } else {
+          this.$notify({
+            title: '失败',
+            message: '删除失败',
+            type: 'fail',
+            duration: 2000
+          })
+        }
+      }).catch(err => {
+        this.$message.error(err)
+      })
+    },
+    checkoutStatus(row) {
+      checkoutStatusFirstScreen(row.id).then(response => {
+        if (response.data.status) {
+          this.$notify({
+            title: '成功',
+            message: '更新状态成功',
+            type: 'success',
+            duration: 2000
+          });
+          this.getList()
+        } else {
+          this.$notify({
+            title: '失败',
+            message: '更新状态失败',
+            type: 'fail',
+            duration: 2000
+          })
+        }
+      }).catch(err => {
+        this.$message.error(err)
+      })
+    },
     handleDownload() {
 
     },
-    update() {},
-    create() {}
+    update() {
+      updateFirstScreen(this.first_screen).then(response => {
+        if (response.data.status) {
+          this.dialogFormVisible = false;
+          this.$notify({
+            title: '成功',
+            message: '更新成功',
+            type: 'success',
+            duration: 2000
+          });
+          this.getList()
+        } else {
+          this.$notify({
+            title: '失败',
+            message: '更新失败',
+            type: 'fail',
+            duration: 2000
+          });
+        }
+      }).catch(err => {
+        this.$message.error(err);
+      })
+    }
   }
 }
 </script>

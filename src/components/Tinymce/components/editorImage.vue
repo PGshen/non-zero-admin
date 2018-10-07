@@ -9,9 +9,10 @@
         :show-file-list="true"
         :on-remove="handleRemove"
         :on-success="handleSuccess"
+        :headers="myHeaders"
         :before-upload="beforeUpload"
         class="editor-slide-upload"
-        action="https://httpbin.org/post"
+        action="http://localhost:8088/official/website/news/upload"
         list-type="picture-card">
         <el-button size="small" type="primary">点击上传</el-button>
       </el-upload>
@@ -22,7 +23,7 @@
 </template>
 
 <script>
-// import { getToken } from 'api/qiniu'
+import { getToken } from '@/utils/auth'
 
 export default {
   name: 'EditorSlideUpload',
@@ -36,7 +37,10 @@ export default {
     return {
       dialogVisible: false,
       listObj: {},
-      fileList: []
+      fileList: [],
+      myHeaders: {
+        'x-auth-token': getToken() // 文件上传携带token
+      }
     }
   },
   methods: {
@@ -60,7 +64,8 @@ export default {
       const objKeyArr = Object.keys(this.listObj)
       for (let i = 0, len = objKeyArr.length; i < len; i++) {
         if (this.listObj[objKeyArr[i]].uid === uid) {
-          this.listObj[objKeyArr[i]].url = response.files.file
+          // this.listObj[objKeyArr[i]].url = response.files.file
+          this.listObj[objKeyArr[i]].url = response.data
           this.listObj[objKeyArr[i]].hasSuccess = true
           return
         }

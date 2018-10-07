@@ -4,12 +4,12 @@
 
       <div class="baseInfo-main-container">
         <el-alert :closable="false" style="width:200px;display:inline-block;vertical-align: middle;" title="网站基本信息配置" type="success"/>
-        <el-button size="small" type="success" @click="submitForm">更新</el-button>
+        <el-button size="small" type="success" @click="update">更新</el-button>
         <el-row>
 
           <el-col :span="24">
-            <el-form-item style="margin-bottom: 40px;" prop="site_name">
-              <MDinput v-model="webForm.site_name" :maxlength="100" name="name" required>
+            <el-form-item style="margin-bottom: 40px;" prop="siteName">
+              <MDinput v-model="webForm.siteName" :maxlength="100" name="name" required>
                 网站名称
               </MDinput>
             </el-form-item>
@@ -17,42 +17,50 @@
         </el-row>
 
         <el-row :gutter="32">
-          <el-col :xs="24" :sm="24" :lg="12" style="padding-left: 0">
+          <el-col :xs="24" :sm="24" :lg="24" style="padding-left: 0">
             <div class="input-wrapper">
               <el-form-item style="margin-bottom: 40px;" label-width="100px" label="网站Logo:">
-                <el-upload
-                  :on-preview="handleLogoPreview"
-                  :on-remove="handleRemove"
-                  action="https://jsonplaceholder.typicode.com/posts/"
-                  list-type="picture-card">
-                  <i class="el-icon-plus"/>
-                </el-upload>
-                <el-dialog :visible.sync="logoVisible">
-                  <img :src="webForm.logo_url" width="100%" alt="">
-                </el-dialog>
+                <pan-thumb :image="webForm.logoUrl"/>
+
+                <el-button type="primary" icon="upload" style="position: absolute;bottom: 15px;margin-left: 40px;" @click="logoShow=true">Change Logo
+                </el-button>
+
+                <image-cropper
+                  v-show="logoShow"
+                  :width="300"
+                  :height="300"
+                  :key="logoCropperKey"
+                  url="/official/website/base/info/upload"
+                  lang-type="en"
+                  @close="closeLogo"
+                  @crop-upload-success="cropLogoSuccess"/>
               </el-form-item>
             </div>
           </el-col>
-          <el-col :xs="24" :sm="24" :lg="12" style="padding-left: 0">
+          <el-col :xs="24" :sm="24" :lg="24" style="padding-left: 0">
             <div class="input-wrapper">
               <el-form-item style="margin-bottom: 40px;" label-width="100px" label="二维码:">
-                <el-upload
-                  :on-preview="handleQRPreview"
-                  :on-remove="handleRemove"
-                  action="https://jsonplaceholder.typicode.com/posts/"
-                  list-type="picture-card">
-                  <i class="el-icon-plus"/>
-                </el-upload>
-                <el-dialog :visible.sync="qrVisible">
-                  <img :src="webForm.qr_code_url" width="100%" alt="">
-                </el-dialog>
+                <img :src="webForm.qrCodeUrl" class="qrcode">
+
+                <el-button type="primary" icon="upload" style="position: absolute;bottom: 15px;margin-left: 40px;" @click="qrCodeShow=true">Change QRcode
+                </el-button>
+
+                <image-cropper
+                  v-show="qrCodeShow"
+                  :width="300"
+                  :height="300"
+                  :key="qrCodeCropperKey"
+                  url="/official/website/base/info/upload"
+                  lang-type="en"
+                  @close="closeQRCode"
+                  @crop-upload-success="cropQRCodeSuccess"/>
               </el-form-item>
             </div>
           </el-col>
         </el-row>
 
         <el-form-item style="margin-bottom: 40px;" label-width="100px" label="网站关键字:">
-          <el-input :rows="1" v-model="webForm.key_words" type="textarea" class="article-textarea" autosize placeholder="请输入关键字"/>
+          <el-input :rows="1" v-model="webForm.keyWords" type="textarea" class="article-textarea" autosize placeholder="请输入关键字"/>
         </el-form-item>
         <el-form-item style="margin-bottom: 40px;" label-width="100px" label="首页描述:">
           <el-input :rows="1" v-model="webForm.description" type="textarea" class="article-textarea" autosize placeholder="请输入描述"/>
@@ -93,13 +101,17 @@
 /* eslint-disable semi */
 
 import MDinput from '@/components/MDinput'
+import Upload from '@/components/Upload/singleImage'
+import ImageCropper from '@/components/ImageCropper'
+import PanThumb from '@/components/PanThumb'
 import { validateURL } from '@/utils/validate'
+import { fetchInfo, updateInfo } from '@/api/official-site/base-info/webInfo'
 
 const defaultForm = {
-  site_name: '', // 网站名称
-  logo_url: '', // logo URL
-  qr_code_url: '', // 二维码URL
-  key_words: '', // 关键字
+  siteName: '', // 网站名称
+  logoUrl: 'http://localhost:8088/upload/avatar/2018/10/03211819269.png', // logo URL
+  qrCodeUrl: 'http://localhost:8088/upload/avatar/2018/10/03211819269.png', // 二维码URL
+  keyWords: '', // 关键字
   description: '', // 描述
   contact: '', // 联系方式
   record: '', // 备案信息
@@ -108,7 +120,7 @@ const defaultForm = {
 
 export default {
   name: 'WebInfo',
-  components: { MDinput },
+  components: { MDinput, Upload, ImageCropper, PanThumb },
   data() {
     const validateRequire = (rule, value, callback) => {
       if (value === '') {
@@ -140,14 +152,16 @@ export default {
       webForm: Object.assign({}, defaultForm),
       loading: false,
       userListOptions: [],
-      logoVisible: false,
-      qrVisible: false,
+      logoShow: false,
+      qrCodeShow: false,
+      logoCropperKey: 0,
+      qrCodeCropperKey: 0,
       rules: {
-        site_name: [{ validator: validateRequire }],
+        siteName: [{ validator: validateRequire }],
         description: [{ validator: validateRequire }],
-        key_words: [{ validator: validateRequire }],
-        logo_url: [{ validator: validateSourceUri, trigger: 'blur' }],
-        qr_code_url: [{ validator: validateSourceUri, trigger: 'blur' }]
+        keyWords: [{ validator: validateRequire }],
+        logoUrl: [{ validator: validateSourceUri, trigger: 'blur' }],
+        qrCodeUrl: [{ validator: validateSourceUri, trigger: 'blur' }]
       }
     }
   },
@@ -157,34 +171,76 @@ export default {
     }
   },
   created() {
-
+    this.fetchInfo()
   },
   methods: {
-    handleRemove(file, fileList) {
-      console.log(file, fileList);
+    cropLogoSuccess(resData) {
+      this.logoShow = false
+      this.logoCropperKey = this.logoCropperKey + 1
+      // this.webForm.logoUrl = 'http://localhost:8088/' + resData.data
+      this.webForm.logoUrl = resData.data
     },
-    handleQRPreview(file) {
-      this.webForm.qr_code_url = file.url;
-      this.qrVisible = true;
+    closeLogo() {
+      this.logoShow = false
     },
-    handleLogoPreview(file) {
-      this.webForm.logo_url = file.url;
-      this.logoVisible = true;
+    cropQRCodeSuccess(resData) {
+      this.qrCodeShow = false
+      this.qrCodeCropperKey = this.qrCodeCropperKey + 1
+      // this.webForm.qrCodeUrl = 'http://localhost:8088/' + resData.data
+      this.webForm.qrCodeUrl = resData.data
     },
-    submitForm() {
-      this.webForm.display_time = parseInt(this.display_time / 1000);
-      console.log(this.webForm);
-      this.$refs.webForm.validate(valid => {
-        if (valid) {
-          this.loading = true;
+    closeQRCode() {
+      this.qrCodeShow = false
+    },
+    fetchInfo() {
+      fetchInfo().then(response => {
+        if (response.data.status) {
           this.$notify({
             title: '成功',
-            message: '更新网站信息成功',
+            message: '获取信息成功',
             type: 'success',
             duration: 2000
           });
-          this.webForm.status = 'published';
-          this.loading = false
+          this.webForm = response.data.data;
+          // this.webForm.logoUrl = 'http://localhost:8088/' + response.data.data.logoUrl;
+          this.webForm.logoUrl = response.data.data.logoUrl;
+          // this.webForm.qrCodeUrl = 'http://localhost:8088/' + response.data.data.qrCodeUrl;
+          this.webForm.qrCodeUrl = response.data.data.qrCodeUrl;
+        } else {
+          this.$notify({
+            title: '失败',
+            message: '获取失败',
+            type: 'fail',
+            duration: 2000
+          })
+        }
+      })
+    },
+    update() {
+      console.log(this.webForm);
+      this.loading = true;
+      this.$refs.webForm.validate(valid => {
+        if (valid) {
+          this.loading = true;
+          updateInfo(this.webForm).then(response => {
+            if (response.data.status) {
+              this.webForm = response.data.data;
+              this.$notify({
+                title: '成功',
+                message: '更新网站信息成功',
+                type: 'success',
+                duration: 2000
+              });
+            } else {
+              this.$notify({
+                title: '失败',
+                message: '更新失败',
+                type: 'fail',
+                duration: 2000
+              });
+            }
+          });
+          this.loading = false;
         } else {
           console.log('error submit!!');
           return false
@@ -213,5 +269,14 @@ export default {
       right: -10px;
       top: 0px;
     }
+  }
+  .avatar{
+    width: 200px;
+    height: 200px;
+    border-radius: 20%;
+  }
+  .qrcode{
+    width: 150px;
+    height: 150px;
   }
 </style>

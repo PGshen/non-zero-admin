@@ -12,7 +12,7 @@
         @keyup.enter.native="handleFilter"/>
 
       <el-select
-        v-model="listQuery.enable"
+        v-model="listQuery.cond.isEnable"
         style="width: 120px"
         class="filter-item"
         placeholder="筛选"
@@ -35,15 +35,15 @@
       fit
       highlight-current-row
       style="width: 100%">
-      <el-table-column align="center" label="ID" width="80">
-        <template slot-scope="scope">
-          <span>{{ scope.row.id }}</span>
-        </template>
+      <el-table-column align="center" label="ID" width="80" type="index">
+        <!--<template slot-scope="scope">-->
+        <!--<span>{{ scope.row.id }}</span>-->
+        <!--</template>-->
       </el-table-column>
 
-      <el-table-column width="140px" align="center" label="Date">
+      <el-table-column width="100px" align="center" label="Date">
         <template slot-scope="scope">
-          <span>{{ scope.row.created_time | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+          <span>{{ scope.row.updateTime }}</span>
         </template>
       </el-table-column>
 
@@ -55,17 +55,17 @@
 
       <el-table-column width="200px" align="left" label="SubHeading">
         <template slot-scope="scope">
-          <span>{{ scope.row.sub_heading }}</span>
+          <span>{{ scope.row.subHeading }}</span>
         </template>
       </el-table-column>
 
       <el-table-column min-width="250px" align="left" label="Description">
         <template slot-scope="scope">
-          <span>{{ scope.row.description }}</span>
+          <span>{{ scope.row.description.substring(0,45) + "..." }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column width="200px" align="center" label="Picture">
+      <el-table-column width="150px" align="center" label="Picture">
         <template slot-scope="scope">
           <img :src="scope.row.pic" width="100%">
         </template>
@@ -80,16 +80,16 @@
             @click="handleUpdate(scope.row)">编辑
           </el-button>
           <el-button
-            v-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:user:ban') !== -1 && scope.row.enable === 1"
+            v-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:user:ban') !== -1 && scope.row.isEnable === '1'"
             size="mini"
             type="warning"
-            @click="handleUpdate(scope.row)">禁用
+            @click="handleBan(scope.row)">禁用
           </el-button>
           <el-button
-            v-else-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:user:ban') !== -1 && scope.row.enable === 0"
+            v-else-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:user:ban') !== -1 && scope.row.isEnable === '0'"
             size="mini"
             type="success"
-            @click="handleUpdate(scope.row)">启用
+            @click="handleBan(scope.row)">启用
           </el-button>
           <el-button
             v-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:user:delete') !== -1"
@@ -125,7 +125,7 @@
 
         <el-form-item class="carousel-form-item" label="副标题">
           <el-input
-            v-model="carousel.sub_heading"
+            v-model="carousel.subHeading"
             style="width: 90%;"
             class="filter-item"
             placeholder="请输入"/>
@@ -133,9 +133,11 @@
 
         <el-form-item class="carousel-form-item" label="启用">
           <el-switch
-            v-model="carousel.enable"
+            v-model="carousel.isEnable"
             active-color="#13ce66"
-            inactive-color="#ff4949"/>
+            inactive-color="#ff4949"
+            active-value="1"
+            inactive-value="0"/>
         </el-form-item>
 
         <el-form-item class="carousel-form-item" label="描述">
@@ -151,7 +153,10 @@
           <el-upload
             :on-preview="handlePreview"
             :on-remove="handleRemove"
-            action="https://jsonplaceholder.typicode.com/posts/"
+            :on-success="handleSuccess"
+            :file-list="fileList"
+            :headers="myHeaders"
+            action="http://localhost:8088/official/website/carousel/upload"
             list-type="picture-card">
             <i class="el-icon-plus"/>
           </el-upload>
@@ -162,8 +167,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button v-if="dialogStatus==='create'" type="primary" @click="create">确 定</el-button>
-        <el-button v-else type="primary" @click="update">确 定</el-button>
+        <el-button type="primary" @click="create">确 定</el-button>
       </div>
     </el-dialog>
 
@@ -174,7 +178,8 @@
 /* eslint-disable semi */
 
 import { mapGetters } from 'vuex'
-import { fetchList } from '@/api/official-site/base-info/carouselConf'
+import { fetchList, createCarousel, updateCarousel, deleteCarousel, checkoutStatusCarousel } from '@/api/official-site/base-info/carouselConf'
+import { getToken } from '@/utils/auth'
 
 export default {
   name: 'CarouselConf',
@@ -183,19 +188,22 @@ export default {
       carouselList: null,
       carousel: {
         id: null,
-        created_time: '',
+        updateTime: '',
         heading: '',
-        sub_heading: '',
+        subHeading: '',
         description: '',
         pic: '',
-        enable: ''
+        isEnable: '1'
+      },
+      myHeaders: {
+        'x-auth-token': getToken() // 文件上传携带token
       },
       total: null,
       listLoading: true,
       listQuery: {
         page: 1,
         size: 5,
-        enable: '-1',
+        order: 'updateTime',
         cond: {}
       },
       sortOptions: [{ label: '全部', key: '-1' }, { label: '已启用', key: '1' }, { label: '未启用', key: '0' }],
@@ -205,7 +213,8 @@ export default {
       },
       dialogStatus: '',
       dialogFormVisible: false,
-      picVisible: false
+      picVisible: false,
+      fileList: []
     }
   },
   computed: {
@@ -221,16 +230,34 @@ export default {
       console.log(file, fileList);
     },
     handlePreview(file) {
-      this.carousel.pic = file.url;
+      console.log(file);
+      this.carousel.pic = file.response.data;
       this.picVisible = true;
+    },
+    handleSuccess(res, file, fileList) {
+      if (res.code === 20000) {
+        this.carousel.pic = res.data;
+      }
     },
     getList() {
       this.listLoading = true;
       fetchList(this.listQuery).then(response => {
-        this.carouselList = response.data.items;
-        this.total = response.data.total;
+        this.carouselList = response.data.data.list;
+        this.total = response.data.data.total;
+        this.page = response.data.data.pages;
         this.listLoading = false;
       })
+    },
+    resetCarousel() {
+      this.carousel = {
+        id: undefined,
+        updateTime: '',
+        heading: '',
+        subHeading: '',
+        description: '',
+        pic: '',
+        isEnable: '1'
+      }
     },
     handleSizeChange(val) {
       this.listQuery.size = val;
@@ -244,19 +271,111 @@ export default {
       this.getList()
     },
     handleCreate() {
+      this.resetCarousel();
       this.dialogStatus = 'create';
       this.dialogFormVisible = true
     },
-    handleUpdate() {
+    handleUpdate(row) {
+      this.carousel = Object.assign({}, row);
+      this.fileList.splice(0, this.fileList.length); // 清空
+      this.fileList.push({ name: row.id, url: row.pic });
       this.dialogStatus = 'update';
       this.dialogFormVisible = true
     },
-    handleDelete() {},
+    handleDelete(row) {
+      deleteCarousel(row.id).then(response => {
+        if (response.data.status) {
+          this.$notify({
+            title: '成功',
+            message: '删除成功',
+            type: 'success',
+            duration: 2000
+          });
+          this.getList()
+        } else {
+          this.$notify({
+            title: '失败',
+            message: '删除失败',
+            type: 'fail',
+            duration: 2000
+          })
+        }
+      }).catch(err => {
+        this.$message.error(err)
+      })
+    },
+    handleBan(row) {
+      checkoutStatusCarousel(row.id).then(response => {
+        if (response.data.status) {
+          this.$notify({
+            title: '成功',
+            message: '更新状态成功',
+            type: 'success',
+            duration: 2000
+          });
+          this.getList()
+        } else {
+          this.$notify({
+            title: '失败',
+            message: '更新状态失败',
+            type: 'fail',
+            duration: 2000
+          })
+        }
+      }).catch(err => {
+        this.$message.error(err)
+      })
+    },
     handleDownload() {
 
     },
-    update() {},
-    create() {}
+    update() {
+      updateCarousel(this.carousel).then(response => {
+        if (response.data.status) {
+          this.dialogFormVisible = false;
+          this.$notify({
+            title: '成功',
+            message: '更新成功',
+            type: 'success',
+            duration: 2000
+          });
+          this.getList()
+        } else {
+          this.$notify({
+            title: '失败',
+            message: '更新失败',
+            type: 'fail',
+            duration: 2000
+          });
+        }
+      }).catch(err => {
+        this.$message.error(err);
+      })
+    },
+    create() {
+      delete this.carousel.updateTime;
+      createCarousel(this.carousel).then(response => {
+        if (response.data.status) {
+          this.dialogFormVisible = false;
+          this.$notify({
+            title: '成功',
+            message: '创建成功',
+            type: 'success',
+            duration: 2000
+          });
+          this.getList();
+        } else {
+          this.$notify({
+            title: '失败',
+            message: '创建失败',
+            type: 'fail',
+            duration: 2000
+          })
+        }
+      }).catch(err => {
+        this.$message.error(err)
+      })
+    }
   }
 }
 </script>

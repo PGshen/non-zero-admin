@@ -2,7 +2,7 @@
   <div class="createCustomerCase-container">
     <el-form ref="customerCaseForm" :model="customerCaseForm" :rules="rules" class="form-container">
 
-      <sticky :class-name="'sub-navbar '+customerCaseForm.status">
+      <sticky :class-name="'sub-navbar '+customerCaseForm.isEnable">
         <el-button v-loading="loading" style="margin-left: 10px;" type="success" @click="submitForm">发布
         </el-button>
         <el-button v-loading="loading" type="warning" @click="draftForm">草稿</el-button>
@@ -13,37 +13,40 @@
 
           <el-col :span="24">
             <el-form-item style="margin-bottom: 40px;" prop="title">
-              <MDinput v-model="customerCaseForm.first_heading" :maxlength="100" name="name" required>
+              <MDinput v-model="customerCaseForm.firstHeading" :maxlength="100" name="name" required>
                 标题
               </MDinput>
             </el-form-item>
 
             <el-row>
-              <el-col :span="12">
+              <el-col :span="12" :xs="12" :sm="24" :lg="12">
                 <el-form-item style="margin-bottom: 40px;" label-width="80px" label="二级标题:">
-                  <el-input :rows="1" v-model="customerCaseForm.secondary_heading" type="textarea" class="article-textarea" autosize placeholder="请输入内容"/>
+                  <el-input :rows="1" v-model="customerCaseForm.secondaryHeading" type="textarea" class="article-textarea" autosize placeholder="请输入内容"/>
                 </el-form-item>
               </el-col>
-              <el-col :span="12">
+              <el-col :span="12" :xs="12" :sm="24" :lg="12">
                 <el-form-item style="margin-bottom: 40px;" label-width="80px" label="三级标题:">
-                  <el-input :rows="1" v-model="customerCaseForm.tertiary_heading" type="textarea" class="article-textarea" autosize placeholder="请输入内容"/>
+                  <el-input :rows="1" v-model="customerCaseForm.tertiaryHeading" type="textarea" class="article-textarea" autosize placeholder="请输入内容"/>
                 </el-form-item>
               </el-col>
             </el-row>
 
             <div class="customerCaseInfo-container">
               <el-row>
-                <el-col :span="12">
-                  <el-form-item label-width="80px" label="案例类别:" class="customerCaseInfo-container-item">
-                    <el-select v-model="customerCaseForm.case_class" :remote-method="getRemoteProductClassList" filterable remote placeholder="搜索案例类别">
-                      <el-option v-for="(item,index) in customerCaseClassOptions" :key="item+index" :label="item" :value="item"/>
+                <el-col :span="12" :xs="12" :sm="24" :lg="12">
+                  <el-form-item label-width="80px" label="类别:" class="customerInfo-container-item">
+                    <el-select v-model="customerCaseForm.caseClass" placeholder="请选择">
+                      <el-option
+                        v-for="item in customerCaseClassOptions"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value"/>
                     </el-select>
                   </el-form-item>
                 </el-col>
-
-                <el-col :span="12">
-                  <el-form-item label-width="80px" label="创建时间:" class="customerCaseInfo-container-item">
-                    <el-date-picker v-model="customerCaseForm.create_time" type="datetime" format="yyyy-MM-dd HH:mm:ss" placeholder="选择日期时间"/>
+                <el-col :span="12" :xs="12" :sm="24" :lg="12" >
+                  <el-form-item label-width="80px" label="创建时间:" class="postInfo-container-item">
+                    <el-date-picker v-model="customerCaseForm.createdTime" type="datetime" format="yyyy-MM-dd HH:mm:ss" value-format="yyyy-MM-dd HH:mm:ss" placeholder="选择日期时间"/>
                   </el-form-item>
                 </el-col>
               </el-row>
@@ -51,31 +54,29 @@
           </el-col>
         </el-row>
 
-        <el-form-item style="margin-bottom: 40px;" label-width="80px" label="案例摘要:">
-          <el-input :rows="1" v-model="customerCaseForm.case_synopsis" type="textarea" class="article-textarea" autosize placeholder="请输入内容"/>
+        <el-form-item style="margin-bottom: 40px;" label-width="80px" label="摘要:">
+          <el-input :rows="1" v-model="customerCaseForm.customerCaseSynopsis" type="textarea" class="article-textarea" autosize placeholder="请输入内容"/>
+          <span v-show="synopsisLength" class="word-counter">{{ synopsisLength }}字</span>
         </el-form-item>
 
-        <el-row>
-          <el-col :xs="24" :sm="24" :lg="12" style="padding-left: 0">
-            <div class="input-wrapper">
-              <el-form-item style="margin-bottom: 40px;" label-width="80px" label="案例图片:">
-                <el-upload
-                  :on-preview="handlePreview"
-                  :on-remove="handleRemove"
-                  action="https://jsonplaceholder.typicode.com/posts/"
-                  list-type="picture-card">
-                  <i class="el-icon-plus"/>
-                </el-upload>
-                <el-dialog :visible.sync="picVisible">
-                  <img :src="customerCaseForm.case_pic" width="100%" alt="">
-                </el-dialog>
-              </el-form-item>
-            </div>
-          </el-col>
-        </el-row>
+        <el-form-item style="margin-bottom: 40px;" label-width="80px" label="图片:">
+          <el-upload
+            :on-preview="handlePreview"
+            :on-remove="handleRemove"
+            :on-success="handleSuccess"
+            :headers="myHeaders"
+            :file-list="fileList"
+            action="http://localhost:8088/official/website/customer/case/upload"
+            list-type="picture-card">
+            <i class="el-icon-plus"/>
+          </el-upload>
+          <el-dialog :visible.sync="picVisible">
+            <img :src="customerCaseForm.casePic" width="100%" alt="">
+          </el-dialog>
+        </el-form-item>
 
         <div class="editor-container">
-          <Tinymce ref="editor" :height="400" v-model="customerCaseForm.case_text" />
+          <Tinymce ref="editor" :height="400" v-model="customerCaseForm.caseText" />
         </div>
       </div>
     </el-form>
@@ -87,20 +88,21 @@
 import Tinymce from '@/components/Tinymce'
 import MDinput from '@/components/MDinput'
 import Sticky from '@/components/Sticky' // 粘性header组件
-import { fetchCustomerCase, customerCaseSearch } from '@/api/official-site/customer-case/customer-case'
+import { getToken } from '@/utils/auth'
+import { fetchClazzList } from '@/api/official-site/base-info/clazzConf'
+import { fetchCustomerCase, createCustomerCase, updateCustomerCase } from '@/api/official-site/customer-case/customer-case'
 
 const defaultForm = {
   id: undefined,
-  create_time: undefined,
-  update_time: undefined,
-  first_heading: '',
-  secondary_heading: '',
-  tertiary_heading: '',
-  case_synopsis: '',
-  case_text: '',
-  case_pic: '',
-  is_enable: 'draft',
-  create_user: ''
+  createdTime: undefined,
+  firstHeading: '',
+  secondaryHeading: '',
+  tertiaryHeading: '',
+  customerCaseSynopsis: '',
+  caseText: '',
+  casePic: '',
+  caseClass: '',
+  isEnable: 'draft'
 }
 
 export default {
@@ -128,6 +130,11 @@ export default {
       customerCaseForm: Object.assign({}, defaultForm),
       loading: false,
       customerCaseClassOptions: [], // 从数据库获取类别
+      myHeaders: {
+        'x-auth-token': getToken() // 文件上传携带token
+      },
+      editFlag: this.isEdit,
+      fileList: [],
       picVisible: false,
       rules: {
         first_heading: [{ validator: validateRequire }],
@@ -137,11 +144,16 @@ export default {
     }
   },
   computed: {
-    contentShortLength() {
-      return this.customerCaseForm.case_text.length
+    synopsisLength() {
+      return this.customerCaseForm.customerCaseSynopsis.length
     }
   },
   created() {
+    fetchClazzList({ clazzName: 'CASE' }).then(response => {
+      if (response.data.code === 20000) {
+        this.customerCaseClassOptions = response.data.data
+      }
+    })
     if (this.isEdit) {
       const id = this.$route.params && this.$route.params.id
       this.fetchData(id)
@@ -154,57 +166,127 @@ export default {
       console.log(file, fileList)
     },
     handlePreview(file) {
-      this.customerCaseForm.case_pic = file.url
+      console.log(file)
+      this.customerCaseForm.casePic = file.response.data
       this.picVisible = true
+    },
+    handleSuccess(res, file, fileList) {
+      if (res.code === 20000) {
+        this.customerCaseForm.casePic = res.data
+      }
     },
     fetchData(id) {
       fetchCustomerCase(id).then(response => {
-        this.customerCaseForm = response.data
+        this.customerCaseForm = response.data.data
+        this.fileList.splice(0, this.fileList.length) // 清空
+        this.fileList.push({ name: response.data.data.id, url: response.data.data.casePic })
       }).catch(err => {
         console.log(err)
       })
     },
     submitForm() {
-      this.customerCaseForm.create_time = parseInt(this.create_time / 1000)
       console.log(this.customerCaseForm)
       this.$refs.customerCaseForm.validate(valid => {
         if (valid) {
           this.loading = true
-          this.$notify({
-            title: '成功',
-            message: '新增客户案例成功',
-            type: 'success',
-            duration: 2000
-          })
-          this.customerCaseForm.status = 'published'
+          this.customerCaseForm.isEnable = '1' // published
+          if (!this.editFlag) {
+            createCustomerCase(this.customerCaseForm).then(response => {
+              if (response.data.code === 20000) {
+                this.customerCaseForm.id = response.data.data.id
+                this.editFlag = true // 第一次点击发布后,isEdit标志修改为false,避免后续点击发布按钮重新添加为新的文章
+                this.$notify({
+                  title: '成功',
+                  message: '发布案例成功',
+                  type: 'success',
+                  duration: 2000
+                })
+              } else {
+                this.$notify({
+                  title: '失败',
+                  message: '发布案例失败',
+                  type: 'fail',
+                  duration: 2000
+                })
+              }
+            })
+          } else {
+            updateCustomerCase(this.customerCaseForm).then(response => {
+              if (response.data.code === 20000) {
+                this.$notify({
+                  title: '成功',
+                  message: '更新案例成功',
+                  type: 'success',
+                  duration: 2000
+                })
+              } else {
+                this.$notify({
+                  title: '失败',
+                  message: '更新案例失败',
+                  type: 'fail',
+                  duration: 2000
+                })
+              }
+            })
+          }
           this.loading = false
         } else {
           console.log('error submit!!')
+          this.$message.error('信息填写有错误')
           return false
         }
       })
     },
     draftForm() {
-      if (this.customerCaseForm.first_heading.length === 0 || this.customerCaseForm.case_text.length === 0) {
+      if (this.customerCaseForm.caseText.length === 0 || this.customerCaseForm.firstHeading.length === 0) {
         this.$message({
           message: '请填写必要的标题和内容',
           type: 'warning'
         })
         return
       }
-      this.$message({
-        message: '保存成功',
-        type: 'success',
-        showClose: true,
-        duration: 1000
-      })
-      this.customerCaseForm.status = 'draft'
-    },
-    getRemoteProductClassList(query) {
-      customerCaseSearch(query).then(response => {
-        if (!response.data.items) return
-        this.customerCaseClassOptions = response.data.items.map(v => v.name)
-      })
+      this.loading = true
+      this.customerCaseForm.isEnable = '0' // draft
+      if (!this.editFlag) {
+        createCustomerCase(this.customerCaseForm).then(response => {
+          this.customerCaseForm.id = response.data.data.id
+          this.editFlag = true // 第一次点击发布后,isEdit标志修改为false,避免后续点击发布按钮重新添加为新的文章
+          if (response.data.code === 20000) {
+            this.$notify({
+              title: '成功',
+              message: '保存案例草稿成功',
+              type: 'success',
+              duration: 2000
+            })
+          } else {
+            this.$notify({
+              title: '失败',
+              message: '保存案例草稿失败',
+              type: 'fail',
+              duration: 2000
+            })
+          }
+        })
+      } else {
+        updateCustomerCase(this.customerCaseForm).then(response => {
+          if (response.data.code === 20000) {
+            this.$notify({
+              title: '成功',
+              message: '更新案例草稿成功',
+              type: 'success',
+              duration: 2000
+            })
+          } else {
+            this.$notify({
+              title: '失败',
+              message: '更新案例草稿失败',
+              type: 'fail',
+              duration: 2000
+            })
+          }
+        })
+      }
+      this.loading = false
     }
   }
 }

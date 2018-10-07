@@ -108,7 +108,7 @@
     <div v-show="!listLoading" class="pagination-container">
       <el-pagination
         :current-page.sync="listQuery.page"
-        :page-sizes="[10,20,30, 50]"
+        :page-sizes="[2,10,20,30, 50]"
         :page-size="listQuery.size"
         :total="total"
         layout="total, sizes, prev, pager, next, jumper"

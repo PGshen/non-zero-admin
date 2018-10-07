@@ -10,12 +10,12 @@
         @keyup.enter.native="handleFilter"/>
 
       <el-select
-        v-model="listQuery.status"
+        v-model="listQuery.cond.status"
         style="width: 120px"
         class="filter-item"
         placeholder="筛选"
         @change="handleFilter">
-        <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key"/>
+        <el-option v-for="item in statusOptions" :key="item.key" :label="item.label" :value="item.key"/>
       </el-select>
 
       <el-button class="filter-item" type="primary" icon="search" @click="handleFilter">搜索</el-button>
@@ -23,15 +23,21 @@
     </div>
 
     <el-table v-loading.body="listLoading" :data="list" border fit highlight-current-row style="width: 100%">
-      <el-table-column align="center" label="ID" width="80">
-        <template slot-scope="scope">
-          <span>{{ scope.row.id }}</span>
-        </template>
+      <el-table-column align="center" label="ID" width="80" type="index">
+        <!--<template slot-scope="scope">-->
+        <!--<span>{{ scope.row.id }}</span>-->
+        <!--</template>-->
       </el-table-column>
 
       <el-table-column width="180px" align="center" label="Date">
         <template slot-scope="scope">
-          <span>{{ scope.row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+          <span>{{ scope.row.updateTime | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+        </template>
+      </el-table-column>
+
+      <el-table-column width="100px" label="NewsType">
+        <template slot-scope="scope">
+          <span>{{ scope.row.newsClass }}</span>
         </template>
       </el-table-column>
 
@@ -41,15 +47,9 @@
         </template>
       </el-table-column>
 
-      <el-table-column width="100px" label="Importance">
-        <template slot-scope="scope">
-          <svg-icon v-for="n in +scope.row.importance" :key="n" icon-class="star" class="meta-item__icon"/>
-        </template>
-      </el-table-column>
-
       <el-table-column class-name="status-col" label="Status" width="110">
         <template slot-scope="scope">
-          <el-tag :type="scope.row.status | statusFilter">{{ scope.row.status }}</el-tag>
+          <el-tag :type="scope.row.status | statusFilter">{{ scope.row.status | statusFilter2 }}</el-tag>
         </template>
       </el-table-column>
 
@@ -62,11 +62,29 @@
         </template>
       </el-table-column>
 
-      <el-table-column align="center" label="Actions" width="120">
+      <el-table-column align="center" label="Actions" width="260">
         <template slot-scope="scope">
           <router-link :to="'/official-site/news-center/edit/'+scope.row.id">
-            <el-button type="primary" size="small" icon="el-icon-edit">Edit</el-button>
+            <el-button v-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:user:update') !== -1" type="primary" size="mini">编辑</el-button>
           </router-link>
+          <el-button
+            v-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:user:ban') !== -1 && scope.row.status === '1'"
+            size="mini"
+            type="warning"
+            @click="checkoutStatus(scope.row)">草稿
+          </el-button>
+          <el-button
+            v-else-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:user:ban') !== -1 && scope.row.status === '0'"
+            size="mini"
+            type="success"
+            @click="checkoutStatus(scope.row)">发布
+          </el-button>
+          <el-button
+            v-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:user:delete') !== -1"
+            size="mini"
+            type="danger"
+            @click="handleDelete(scope.row)">删除
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -87,18 +105,34 @@
 </template>
 
 <script>
-import { fetchList } from '@/api/article'
+import { mapGetters } from 'vuex'
+import { fetchList, deleteNews, checkoutStatus } from '@/api/official-site/news-center/news'
 
 export default {
   name: 'NewsCenterList',
   filters: {
     statusFilter(status) {
       const statusMap = {
-        published: 'success',
         draft: 'info',
+        published: 'success',
         deleted: 'danger'
       }
-      return statusMap[status]
+      if (status === '1') {
+        return statusMap['published']
+      } else if (status === '2') {
+        return statusMap['deleted']
+      } else {
+        return statusMap['draft']
+      }
+    },
+    statusFilter2(status) {
+      if (status === '1') {
+        return '已发布'
+      } else if (status === '2') {
+        return '已删除'
+      } else {
+        return '草稿'
+      }
     }
   },
   data() {
@@ -109,11 +143,26 @@ export default {
       listQuery: {
         page: 1,
         size: 10,
-        status: '-1',
-        cond: {}
+        order: 'updateTime',
+        cond: {
+          status: '-1',
+          title: ''
+        }
       },
-      sortOptions: [{ label: '全部', key: '-1' }, { label: '已发布', key: 'published' }, { label: '已删除', key: 'deleted' }, { label: '草稿', key: 'draft' }]
+      news: {
+        id: null,
+        updateTime: '',
+        newsClass: '',
+        author: '',
+        status: ''
+      },
+      statusOptions: [{ label: '全部', key: '-1' }, { label: '已发布', key: '1' }, { label: '已删除', key: '2' }, { label: '草稿', key: '0' }]
     }
+  },
+  computed: {
+    ...mapGetters([
+      'permList'
+    ])
   },
   created() {
     this.getList()
@@ -122,8 +171,9 @@ export default {
     getList() {
       this.listLoading = true
       fetchList(this.listQuery).then(response => {
-        this.list = response.data.items
-        this.total = response.data.total
+        this.list = response.data.data.list
+        this.total = response.data.data.total
+        this.page = response.data.data.pages
         this.listLoading = false
       })
     },
@@ -137,6 +187,61 @@ export default {
     },
     handleFilter() {
       this.getList()
+    },
+    handleDelete(row) {
+      this.$confirm('此操作将永久删除, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        deleteNews(row.id).then(response => {
+          if (response.data.status) {
+            this.$notify({
+              title: '成功',
+              message: '删除成功',
+              type: 'success',
+              duration: 2000
+            })
+            this.getList()
+          } else {
+            this.$notify({
+              title: '失败',
+              message: '删除失败',
+              type: 'fail',
+              duration: 2000
+            })
+          }
+        }).catch(err => {
+          this.$message.error(err)
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        })
+      })
+    },
+    checkoutStatus(row) {
+      checkoutStatus(row.id).then(response => {
+        if (response.data.status) {
+          this.$notify({
+            title: '成功',
+            message: '更新状态成功',
+            type: 'success',
+            duration: 2000
+          })
+          this.getList()
+        } else {
+          this.$notify({
+            title: '失败',
+            message: '更新状态失败',
+            type: 'fail',
+            duration: 2000
+          })
+        }
+      }).catch(err => {
+        this.$message.error(err)
+      })
     }
   }
 }
