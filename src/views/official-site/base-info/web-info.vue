@@ -109,8 +109,8 @@ import { fetchInfo, updateInfo } from '@/api/official-site/base-info/webInfo'
 
 const defaultForm = {
   siteName: '', // 网站名称
-  logoUrl: 'http://localhost:8088/upload/avatar/2018/10/03211819269.png', // logo URL
-  qrCodeUrl: 'http://localhost:8088/upload/avatar/2018/10/03211819269.png', // 二维码URL
+  logoUrl: 'http://111.230.146.130:8088/upload/avatar/2018/10/03211819269.png', // logo URL
+  qrCodeUrl: 'http://111.230.146.130:8088/upload/avatar/2018/10/03211819269.png', // 二维码URL
   keyWords: '', // 关键字
   description: '', // 描述
   contact: '', // 联系方式

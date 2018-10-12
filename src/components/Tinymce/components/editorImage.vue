@@ -12,7 +12,7 @@
         :headers="myHeaders"
         :before-upload="beforeUpload"
         class="editor-slide-upload"
-        action="http://localhost:8088/official/website/news/upload"
+        action="http://111.230.146.130:8088/official/website/news/upload"
         list-type="picture-card">
         <el-button size="small" type="primary">点击上传</el-button>
       </el-upload>

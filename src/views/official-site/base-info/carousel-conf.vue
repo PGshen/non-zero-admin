@@ -156,7 +156,7 @@
             :on-success="handleSuccess"
             :file-list="fileList"
             :headers="myHeaders"
-            action="http://localhost:8088/official/website/carousel/upload"
+            action="http://111.230.146.130:8088/official/website/carousel/upload"
             list-type="picture-card">
             <i class="el-icon-plus"/>
           </el-upload>
@@ -167,7 +167,8 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="create">确 定</el-button>
+        <el-button v-if="dialogStatus==='create'" type="primary" @click="create">确 定</el-button>
+        <el-button v-else type="primary" @click="update">确 定</el-button>
       </div>
     </el-dialog>
 
@@ -284,7 +285,7 @@ export default {
     },
     handleDelete(row) {
       deleteCarousel(row.id).then(response => {
-        if (response.data.status) {
+        if (response.data.code === 20000) {
           this.$notify({
             title: '成功',
             message: '删除成功',
@@ -306,7 +307,7 @@ export default {
     },
     handleBan(row) {
       checkoutStatusCarousel(row.id).then(response => {
-        if (response.data.status) {
+        if (response.data.code === 20000) {
           this.$notify({
             title: '成功',
             message: '更新状态成功',
@@ -331,7 +332,7 @@ export default {
     },
     update() {
       updateCarousel(this.carousel).then(response => {
-        if (response.data.status) {
+        if (response.data.code === 20000) {
           this.dialogFormVisible = false;
           this.$notify({
             title: '成功',
@@ -355,7 +356,7 @@ export default {
     create() {
       delete this.carousel.updateTime;
       createCarousel(this.carousel).then(response => {
-        if (response.data.status) {
+        if (response.data.code === 20000) {
           this.dialogFormVisible = false;
           this.$notify({
             title: '成功',

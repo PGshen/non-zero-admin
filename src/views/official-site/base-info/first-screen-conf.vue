@@ -69,7 +69,7 @@
             :on-remove="handleRemove"
             :on-success="handleSuccess"
             :headers="myHeaders"
-            action="http://localhost:8088/official/website/first/screen/upload"
+            action="http://111.230.146.130:8088/official/website/first/screen/upload"
             list-type="picture-card">
             <i class="el-icon-plus"/>
           </el-upload>
