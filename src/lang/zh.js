@@ -116,7 +116,15 @@ export default {
     webInfo: '网站配置',
     carouselConf: '轮播图',
     classConf: '类别配置',
-    firstScreenConf: '首屏配置'
+    firstScreenConf: '首屏配置',
+    officialWebsite: '网站前台页',
+    index: '首页',
+    enterprise: '公司动态',
+    industry: '行业新闻',
+    detail: '文章详情',
+    contact: '联系我们',
+    culture: '企业文化',
+    recruitment: '人才招聘'
   },
   navbar: {
     logOut: '退出登录',

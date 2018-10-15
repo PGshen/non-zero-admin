@@ -8,7 +8,7 @@ import { getToken } from '@/utils/auth' // getToken from cookie
 
 NProgress.configure({ showSpinner: false }); // NProgress Configuration
 
-const whiteList = ['/login', '/authredirect']; // no redirect whitelist
+const whiteList = ['/login', '/authredirect', '/website']; // no redirect whitelist
 
 router.beforeEach((to, from, next) => {
   NProgress.start(); // start progress bar
@@ -60,6 +60,8 @@ router.beforeEach((to, from, next) => {
     /* has no token*/
     if (whiteList.indexOf(to.path) !== -1) { // 在免登录白名单，直接进入
       next()
+    } else if (startWith(whiteList, to.path)) {
+      next()
     } else {
       next('/login'); // 否则全部重定向到登录页
       NProgress.done(); // if current page is login will not trigger afterEach hook, so manually handle it
@@ -70,3 +72,13 @@ router.beforeEach((to, from, next) => {
 router.afterEach(() => {
   NProgress.done() // finish progress bar
 });
+
+// 白名单匹配
+function startWith(whiteList, path) {
+  for (var i = 0; i < whiteList.length; i++) {
+    if (path.startsWith(whiteList[i])) {
+      return true
+    }
+  }
+  return false
+}
