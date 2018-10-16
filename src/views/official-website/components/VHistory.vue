@@ -1,6 +1,5 @@
 <template>
   <div>
-    <hr>
     <h1 class="cs-content-his-title">发展历程</h1>
     <el-row v-for="(item, index) in history" :key="index">
       <div class="cs-content-his cleafix">
@@ -35,6 +34,8 @@ export default {
     height: 0;
   }
   .cs-content-his-title {
+    max-width: 1100px;
+    margin: 15px auto;
     color: #3a8ee6;
     font-size: 36px;
   }

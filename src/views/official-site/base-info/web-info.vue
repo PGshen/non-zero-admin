@@ -109,8 +109,8 @@ import { fetchInfo, updateInfo } from '@/api/official-site/base-info/webInfo'
 
 const defaultForm = {
   siteName: '', // 网站名称
-  logoUrl: 'http://111.230.146.130:8088/upload/avatar/2018/10/03211819269.png', // logo URL
-  qrCodeUrl: 'http://111.230.146.130:8088/upload/avatar/2018/10/03211819269.png', // 二维码URL
+  logoUrl: '', // logo URL
+  qrCodeUrl: '', // 二维码URL
   keyWords: '', // 关键字
   description: '', // 描述
   contact: '', // 联系方式
@@ -177,7 +177,6 @@ export default {
     cropLogoSuccess(resData) {
       this.logoShow = false
       this.logoCropperKey = this.logoCropperKey + 1
-      // this.webForm.logoUrl = 'http://localhost:8088/' + resData.data
       this.webForm.logoUrl = resData.data
     },
     closeLogo() {
@@ -186,7 +185,6 @@ export default {
     cropQRCodeSuccess(resData) {
       this.qrCodeShow = false
       this.qrCodeCropperKey = this.qrCodeCropperKey + 1
-      // this.webForm.qrCodeUrl = 'http://localhost:8088/' + resData.data
       this.webForm.qrCodeUrl = resData.data
     },
     closeQRCode() {
@@ -202,9 +200,7 @@ export default {
             duration: 2000
           });
           this.webForm = response.data.data;
-          // this.webForm.logoUrl = 'http://localhost:8088/' + response.data.data.logoUrl;
           this.webForm.logoUrl = response.data.data.logoUrl;
-          // this.webForm.qrCodeUrl = 'http://localhost:8088/' + response.data.data.qrCodeUrl;
           this.webForm.qrCodeUrl = response.data.data.qrCodeUrl;
         } else {
           this.$notify({

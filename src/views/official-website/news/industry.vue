@@ -5,14 +5,14 @@
       <el-row :gutter="20">
         <div v-for="(vnew, index) in news" :key="index">
           <el-col :span="12">
-            <router-link :to="{path: '/website/news/detail/1'}">
+            <router-link :to="{path: '/website/news/detail/'+vnew.id}">
               <div class="grid-content cleafix">
                 <div class="left">
-                  <img :src="vnew.pic">
+                  <img :src="vnew.titlePic">
                 </div>
                 <div class="right">
-                  <h3>{{ vnew.heading }}</h3>
-                  <p>{{ vnew.desc }}</p>
+                  <h3>{{ vnew.title }}</h3>
+                  <p>{{ vnew.synopsis | shortStr }}</p>
                   <span>{{ vnew.releaseTime | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
                 </div>
               </div>
@@ -23,9 +23,14 @@
       <el-row>
         <div class="vnew-pagination">
           <el-pagination
-            :total="500"
+            :current-page="listQuery.page"
+            :page-sizes="[10,20,30]"
+            :page-size="listQuery.size"
+            :total="total"
             background
-            layout="prev, pager, next"/>
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"/>
         </div>
       </el-row>
     </div>
@@ -34,58 +39,63 @@
 
 <script>
 import { HalfScreen } from '../components'
-import dm2 from '@/assets/img/dm/dm2.jpg'
-import dm1 from '@/assets/img/dm/dm1.jpg'
+import { fetchFirstScreen, fetchNews } from '@/api/official-site/api/website'
+
 export default {
   name: 'Industry',
   components: { HalfScreen },
   data() {
     return {
-      item: {
-        pic: dm2,
-        heading: '行业动态',
-        subHeading: '行业最近动态',
-        description: '零，是形声字，古同“泠”，清凉。从雨令声，令为领省，即暴雨之前零星的雨滴，《说文》，“零，余雨也”。疾雨曰骤，徐雨曰零，久雨曰苦。引申出零落、零丁等义。古文中零非数词，近代以后方假借为数词;' +
-            '零字小写为〇，〇是道体。〇与一字组成中字，中字是中国上下五千年文化核心名词。最早记载为在4600年前尧传给舜的四字心法“允执厥中”，其意义为真诚的保持中道，不偏离中道，北京故宫中和殿上方匾就是乾隆皇帝御书的允执厥中。中字是由一个〇（口）字和一个一字组成，〇是大道的体，一是大道的用。中字由〇和一组成，同时拥有了大道的体和用，所以中是道的大成。中代表中国的人文哲学，是中华的密码，大道之体是仁爱、友善、宽恕、和平的，大道的用是惟精惟一的。'
-      },
-      news: [
-        {
-          pic: dm1,
-          heading: '新闻标题',
-          desc: '零字小写为〇，〇是道体。〇与一字组成中字，中字是中国上下五千年文化核心名词',
-          releaseTime: new Date()
-        },
-        {
-          pic: dm1,
-          heading: '新闻标题',
-          desc: '零字小写为〇，〇是道体。〇与一字组成中字，中字是中国上下五千年文化核心名词',
-          releaseTime: new Date()
-        },
-        {
-          pic: dm1,
-          heading: '新闻标题',
-          desc: '零字小写为〇，〇是道体。〇与一字组成中字，中字是中国上下五千年文化核心名词',
-          releaseTime: new Date()
-        },
-        {
-          pic: dm1,
-          heading: '新闻标题',
-          desc: '零字小写为〇，〇是道体。〇与一字组成中字，中字是中国上下五千年文化核心名词',
-          releaseTime: new Date()
-        },
-        {
-          pic: dm1,
-          heading: '新闻标题',
-          desc: '零字小写为〇，〇是道体。〇与一字组成中字，中字是中国上下五千年文化核心名词',
-          releaseTime: new Date()
-        },
-        {
-          pic: dm1,
-          heading: '新闻标题',
-          desc: '零字小写为〇，〇是道体。〇与一字组成中字，中字是中国上下五千年文化核心名词',
-          releaseTime: new Date()
+      total: 0,
+      item: {},
+      news: [],
+      firstScreenQuery: {
+        page: 1,
+        size: 1,
+        order: 'update_time desc',
+        cond: {
+          isEnable: '1',
+          clazzName: 'FIRST_SCREEN',
+          clazzValue: '行业新闻'
         }
-      ]
+      },
+      listQuery: {
+        page: 1,
+        size: 10,
+        order: 'update_time desc',
+        cond: {
+          clazzName: 'NEWS',
+          clazzValue: '行业新闻'
+        }
+      }
+    }
+  },
+  created() {
+    this.fetchFirstScreen()
+    this.getList()
+  },
+  methods: {
+    fetchFirstScreen() {
+      fetchFirstScreen(this.firstScreenQuery).then(response => {
+        this.item = response.data.data
+      })
+    },
+    getList() {
+      fetchNews(this.listQuery).then(response => {
+        console.log(response.data.data.list)
+        this.news = response.data.data.list
+        this.total = response.data.data.total
+        this.page = response.data.data.pages
+        this.listLoading = false
+      })
+    },
+    handleSizeChange(val) {
+      this.listQuery.size = val
+      this.getList()
+    },
+    handleCurrentChange(val) {
+      this.listQuery.page = val
+      this.getList()
     }
   }
 }

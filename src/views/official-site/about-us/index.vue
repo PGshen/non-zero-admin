@@ -61,7 +61,7 @@
             :on-success="handleSuccess"
             :file-list="fileList"
             :headers="myHeaders"
-            action="http://111.230.146.130:8088/official/website/about/us/upload"
+            :action="uploadUrl()"
             list-type="picture-card">
             <i class="el-icon-plus"/>
           </el-upload>
@@ -153,6 +153,9 @@ export default {
     });
   },
   methods: {
+    uploadUrl() {
+      return process.env.BASE_API + '/official/website/about/us/upload'
+    },
     handleRemove(file, fileList) {
       console.log(file, fileList);
     },

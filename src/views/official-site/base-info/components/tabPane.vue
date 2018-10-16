@@ -128,7 +128,7 @@ export default {
       listQuery: {
         page: 1,
         size: 100,
-        order: 'updateTime',
+        order: 'update_time desc',
         cond: {
           clazzName: this.type
         }

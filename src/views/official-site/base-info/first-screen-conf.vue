@@ -69,7 +69,7 @@
             :on-remove="handleRemove"
             :on-success="handleSuccess"
             :headers="myHeaders"
-            action="http://111.230.146.130:8088/official/website/first/screen/upload"
+            :action="uploadUrl()"
             list-type="picture-card">
             <i class="el-icon-plus"/>
           </el-upload>
@@ -148,6 +148,9 @@ export default {
     });
   },
   methods: {
+    uploadUrl() {
+      return process.env.BASE_API + '/official/website/first/screen/upload'
+    },
     handleRemove(file, fileList) {
       console.log(file, fileList);
     },

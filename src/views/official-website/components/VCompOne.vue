@@ -3,25 +3,31 @@
     <el-row v-for="(item, index) in items" :key="index" class="v-row v-mid">
       <div v-if="index % 2">
         <el-col :xs="18" :sm="18" :md="18" :lg="18" :xl="18" class="top-left2">
-          <img :src="item.pic">
+          <img :src="item.solutionPic">
         </el-col>
-        <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6" class="top-right2">
-          <h3>{{ item.heading }}</h3>
-          <h4>{{ item.subHeading }}</h4>
-        </el-col>
+        <router-link :to="{path: '/website/business/solution/detail/' + item.id }">
+          <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6" class="top-right2">
+            <h3>{{ item.firstHeading }}</h3>
+            <h4>{{ item.secondaryHeading }}</h4>
+            <h5>{{ item.tertiaryHeading }}</h5>
+          </el-col>
+        </router-link>
       </div>
       <div v-else>
-        <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6" class="top-left1">
-          <h3>{{ item.heading }}</h3>
-          <h4>{{ item.subHeading }}</h4>
-        </el-col>
+        <router-link :to="{path: '/website/business/solution/detail/' + item.id }">
+          <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6" class="top-left1">
+            <h3>{{ item.firstHeading }}</h3>
+            <h4>{{ item.secondaryHeading }}</h4>
+            <h5>{{ item.tertiaryHeading }}</h5>
+          </el-col>
+        </router-link>
         <el-col :xs="18" :sm="18" :md="18" :lg="18" :xl="18" class="top-right1">
-          <img :src="item.pic">
+          <img :src="item.solutionPic">
         </el-col>
       </div>
       <el-row>
         <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="bottom-text">
-          <p>{{ item.synopsis }}</p>
+          <p>{{ item.solutionSynopsis }}</p>
         </el-col>
       </el-row>
     </el-row>
@@ -56,6 +62,7 @@ export default {
   .v-row {
     max-width: 1100px;
     padding: 0 0 30px 0;
+    z-index: -1;
   }
   .top-left1 {
     background-color: #ff7663;

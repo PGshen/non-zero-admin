@@ -124,7 +124,8 @@ export default {
     detail: '文章详情',
     contact: '联系我们',
     culture: '企业文化',
-    recruitment: '人才招聘'
+    recruitment: '人才招聘',
+    businessDetail: '业务详情'
   },
   navbar: {
     logOut: '退出登录',

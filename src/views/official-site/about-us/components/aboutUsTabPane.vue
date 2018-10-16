@@ -118,7 +118,7 @@ export default {
       listQuery: {
         page: 1,
         size: 5,
-        order: 'updateTime',
+        order: 'update_time desc',
         cond: {
           aboutUsClass: this.type
         }

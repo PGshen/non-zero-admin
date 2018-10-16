@@ -3,29 +3,31 @@
     <el-row v-for="(item, index) in items" :key="index" class="v-row v-mid">
       <el-row>
         <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="18" class="top-text">
-          <h2>{{ item.heading }}</h2>
+          <h2>{{ item.firstHeading }}&nbsp;&nbsp;<el-tag>{{ item.caseClass }}</el-tag></h2>
         </el-col>
       </el-row>
       <div v-if="index % 2">
         <el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="bottom-left1">
-          <img :src="item.pic">
+          <img :src="item.casePic">
         </el-col>
-        <el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="bottom-right1">
-          <h4>{{ item.subHeading }}</h4>
-          <p>{{ item.synopsis }}</p>
-          <h4>{{ item.subHeading }}</h4>
-          <p>{{ item.synopsis }}</p>
-        </el-col>
+        <router-link :to="{path: '/website/business/case/detail/' + item.id }">
+          <el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="bottom-right1">
+            <h4>{{ item.secondaryHeading }}</h4>
+            <h5>{{ item.tertiaryHeading }}</h5>
+            <p>{{ item.customerCaseSynopsis }}</p>
+          </el-col>
+        </router-link>
       </div>
       <div v-else>
-        <el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="bottom-left2">
-          <h4>{{ item.subHeading }}</h4>
-          <p>{{ item.synopsis }}</p>
-          <h4>{{ item.subHeading }}</h4>
-          <p>{{ item.synopsis }}</p>
-        </el-col>
+        <router-link :to="{path: '/website/business/case/detail/' + item.id }">
+          <el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="bottom-left2">
+            <h4>{{ item.secondaryHeading }}</h4>
+            <h5>{{ item.tertiaryHeading }}</h5>
+            <p>{{ item.customerCaseSynopsis }}</p>
+          </el-col>
+        </router-link>
         <el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="bottom-right2">
-          <img :src="item.pic">
+          <img :src="item.casePic">
         </el-col>
       </div>
     </el-row>

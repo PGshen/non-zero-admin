@@ -29,7 +29,7 @@ const websiteRouter = {
       meta: { title: 'industry' }
     },
     {
-      path: 'news/detail/:id(\\d+)',
+      path: 'news/detail/:id',
       component: () => import('@/views/official-website/news/detail'),
       name: 'detail',
       meta: { title: 'detail' }
@@ -55,20 +55,26 @@ const websiteRouter = {
     {
       path: 'business/product',
       component: () => import('@/views/official-website/business/product'),
-      name: 'product',
+      name: 'products',
       meta: { title: 'product' }
     },
     {
       path: 'business/solution',
       component: () => import('@/views/official-website/business/solution'),
-      name: 'solution',
+      name: 'solutions',
       meta: { title: 'solution' }
     },
     {
       path: 'business/customerCase',
       component: () => import('@/views/official-website/business/customerCase'),
-      name: 'customerCase',
+      name: 'customerCases',
       meta: { title: 'customerCase' }
+    },
+    {
+      path: 'business/:type/detail/:id',
+      component: () => import('@/views/official-website/business/detail'),
+      name: 'businessDetail',
+      meta: { title: 'businessDetail' }
     },
     {
       path: 'recruitment/index',

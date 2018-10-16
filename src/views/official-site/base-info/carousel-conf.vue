@@ -156,7 +156,7 @@
             :on-success="handleSuccess"
             :file-list="fileList"
             :headers="myHeaders"
-            action="http://111.230.146.130:8088/official/website/carousel/upload"
+            :action="uploadUrl()"
             list-type="picture-card">
             <i class="el-icon-plus"/>
           </el-upload>
@@ -204,7 +204,7 @@ export default {
       listQuery: {
         page: 1,
         size: 5,
-        order: 'updateTime',
+        order: 'update_time desc',
         cond: {}
       },
       sortOptions: [{ label: '全部', key: '-1' }, { label: '已启用', key: '1' }, { label: '未启用', key: '0' }],
@@ -227,6 +227,9 @@ export default {
     this.getList()
   },
   methods: {
+    uploadUrl() {
+      return process.env.BASE_API + '/official/website/carousel/upload'
+    },
     handleRemove(file, fileList) {
       console.log(file, fileList);
     },

@@ -3,12 +3,14 @@
     <el-row :gutter="30">
       <el-col v-for="(vcard, index) in items" :key="index" :xs="12" :sm="8" :md="6" :lg="6" :xl="6">
         <el-card :body-style="{ padding: '0px' }" shadow="hover">
-          <img :src="vcard.pic" class="image">
+          <img :src="vcard.productPic" class="image">
           <div style="padding: 14px;">
-            <span>{{ vcard.heading }}</span>
+            <span>{{ vcard.firstHeading }}</span>
             <div class="bottom clearfix">
-              <time class="time">{{ vcard.updateTime | parseTime('{y}-{m}-{d} {h}:{i}') }}</time>
-              <el-button type="text" class="button">查看详情</el-button>
+              <time class="time">{{ vcard.productClass }}</time>
+              <router-link :to="{path: '/website/business/product/detail/' + vcard.id }">
+                <el-button type="text" class="button">查看详情</el-button>
+              </router-link>
             </div>
           </div>
         </el-card>
@@ -51,6 +53,7 @@ export default {
 
   .image {
     width: 100%;
+    min-height: 238px;
     display: block;
   }
 

@@ -11,8 +11,8 @@
         :on-success="handleSuccess"
         :headers="myHeaders"
         :before-upload="beforeUpload"
+        :action="uploadUrl()"
         class="editor-slide-upload"
-        action="http://111.230.146.130:8088/official/website/news/upload"
         list-type="picture-card">
         <el-button size="small" type="primary">点击上传</el-button>
       </el-upload>
@@ -44,6 +44,9 @@ export default {
     }
   },
   methods: {
+    uploadUrl() {
+      return process.env.BASE_API + '/official/website/news/upload'
+    },
     checkAllSuccess() {
       return Object.keys(this.listObj).every(item => this.listObj[item].hasSuccess)
     },

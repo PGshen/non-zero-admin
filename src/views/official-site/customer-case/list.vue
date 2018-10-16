@@ -150,7 +150,7 @@ export default {
       listQuery: {
         page: 1,
         size: 10,
-        order: 'updateTime',
+        order: 'update_time desc',
         cond: {
           isEnable: '-1',
           firstHeading: ''

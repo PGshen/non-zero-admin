@@ -143,7 +143,7 @@ export default {
       listQuery: {
         page: 1,
         size: 10,
-        order: 'updateTime',
+        order: 'update_time desc',
         cond: {
           status: '-1',
           title: ''
