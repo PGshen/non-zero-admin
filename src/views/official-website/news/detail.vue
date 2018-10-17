@@ -5,19 +5,36 @@
     <div class="content">
       <p v-html="detail.content">&nbsp;</p>
     </div>
-    <v-paging/>
+    <el-tooltip placement="top" content="返回上一页">
+      <v-backspace/>
+    </el-tooltip>
+    <el-tooltip placement="top" content="返回顶部">
+      <back-to-top :custom-style="myBackToTopStyle" :visibility-height="300" :back-position="50" transition-name="fade"/>
+    </el-tooltip>
+    <v-paging :news="paging"/>
   </div>
 </template>
 
 <script>
-import { VPaging } from '../components'
+import { VPaging, VBackspace } from '../components'
+import BackToTop from '@/components/BackToTop'
 import { fetchNewsDetail } from '@/api/official-site/api/website'
 export default {
   name: 'Detail',
-  components: { VPaging },
+  components: { VPaging, BackToTop, VBackspace },
   data() {
     return {
-      detail: {}
+      detail: {},
+      paging: {},
+      myBackToTopStyle: {
+        right: '50px',
+        bottom: '100px',
+        width: '40px',
+        height: '40px',
+        'border-radius': '4px',
+        'line-height': '45px', // 请保持与高度一致以垂直居中 Please keep consistent with height to center vertically
+        background: '#e7eaf1'// 按钮的背景颜色 The background color of the button
+      }
     }
   },
   created() {
@@ -27,7 +44,8 @@ export default {
   methods: {
     fetchDetail(id) {
       fetchNewsDetail(id).then(response => {
-        this.detail = response.data.data
+        this.detail = response.data.data.news
+        this.paging = response.data.data
       })
     }
   }

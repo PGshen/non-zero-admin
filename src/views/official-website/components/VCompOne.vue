@@ -25,18 +25,17 @@
           <img :src="item.solutionPic">
         </el-col>
       </div>
-      <el-row>
-        <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="bottom-text">
-          <p>{{ item.solutionSynopsis }}</p>
-        </el-col>
-      </el-row>
+      <!--<el-row>标签不能放在这,否则会导致父div置顶,不知为何???-->
+      <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="bottom-text">
+        <p>{{ item.solutionSynopsis }}</p>
+      </el-col>
     </el-row>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'VCompTwo',
+  name: 'VCompOne',
   props: {
     items: {
       type: Array,
@@ -62,7 +61,6 @@ export default {
   .v-row {
     max-width: 1100px;
     padding: 0 0 30px 0;
-    z-index: -1;
   }
   .top-left1 {
     background-color: #ff7663;

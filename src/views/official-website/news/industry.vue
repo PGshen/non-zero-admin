@@ -62,7 +62,7 @@ export default {
       listQuery: {
         page: 1,
         size: 10,
-        order: 'update_time desc',
+        order: 'release_time desc',
         cond: {
           clazzName: 'NEWS',
           clazzValue: '行业新闻'
@@ -82,7 +82,6 @@ export default {
     },
     getList() {
       fetchNews(this.listQuery).then(response => {
-        console.log(response.data.data.list)
         this.news = response.data.data.list
         this.total = response.data.data.total
         this.page = response.data.data.pages

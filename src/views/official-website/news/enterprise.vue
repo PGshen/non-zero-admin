@@ -61,7 +61,7 @@ export default {
       listQuery: {
         page: 1,
         size: 10,
-        order: 'update_time desc',
+        order: 'release_time desc',
         cond: {
           clazzName: 'NEWS',
           clazzValue: '公司动态'
