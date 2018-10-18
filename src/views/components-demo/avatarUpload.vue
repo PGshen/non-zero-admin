@@ -33,14 +33,14 @@ export default {
     return {
       imagecropperShow: false,
       imagecropperKey: 0,
-      image: 'http://localhost:8088/upload/avatar/20181002/225201316.png'
+      image: ''
     }
   },
   methods: {
     cropSuccess(resData) {
       this.imagecropperShow = false
       this.imagecropperKey = this.imagecropperKey + 1
-      this.image = 'http://localhost:8088/' + resData.data
+      this.image = process.env.BASE_API + resData.data
     },
     close() {
       this.imagecropperShow = false

@@ -67,7 +67,7 @@
             :on-success="handleSuccess"
             :headers="myHeaders"
             :file-list="fileList"
-            action="http://localhost:8088/official/website/product/upload"
+            :action="uploadUrl()"
             list-type="picture-card">
             <i class="el-icon-plus"/>
           </el-upload>
@@ -163,6 +163,9 @@ export default {
     }
   },
   methods: {
+    uploadUrl() {
+      return process.env.BASE_API + '/official/website/product/upload'
+    },
     handleRemove(file, fileList) {
       console.log(file, fileList)
     },

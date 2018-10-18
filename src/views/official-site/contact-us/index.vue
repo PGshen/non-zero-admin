@@ -2,14 +2,14 @@
   <div class="app-container calendar-list-container">
     <div class="filter-container">
       <el-input
-        v-model="listQuery.cond.heading"
+        v-model="listQuery.cond.name"
         style="width: 200px;"
         class="filter-item"
         placeholder="标题"
         @keyup.enter.native="handleFilter"/>
 
       <el-select
-        v-model="listQuery.enable"
+        v-model="listQuery.cond.isEnable"
         style="width: 120px"
         class="filter-item"
         placeholder="筛选"
@@ -31,10 +31,10 @@
       fit
       highlight-current-row
       style="width: 100%">
-      <el-table-column align="center" label="ID" width="50">
-        <template slot-scope="scope">
-          <span>{{ scope.row.id }}</span>
-        </template>
+      <el-table-column align="center" label="ID" width="50" type="index">
+        <!--<template slot-scope="scope">-->
+        <!--<span>{{ scope.row.id }}</span>-->
+        <!--</template>-->
       </el-table-column>
 
       <el-table-column width="130px" align="left" label="Name">
@@ -51,13 +51,13 @@
 
       <el-table-column width="200px" align="left" label="CooperationEmail">
         <template slot-scope="scope">
-          <span>{{ scope.row.cooperation_email }}</span>
+          <span>{{ scope.row.cooperationEmail }}</span>
         </template>
       </el-table-column>
 
       <el-table-column width="90px" align="center" label="Telephone">
         <template slot-scope="scope">
-          <span>{{ scope.row.office_telephone }}</span>
+          <span>{{ scope.row.officeTelephone }}</span>
         </template>
       </el-table-column>
 
@@ -69,7 +69,7 @@
 
       <el-table-column width="80px" align="center" label="ZipCode">
         <template slot-scope="scope">
-          <span>{{ scope.row.zip_code }}</span>
+          <span>{{ scope.row.zipCode }}</span>
         </template>
       </el-table-column>
 
@@ -88,16 +88,16 @@
             @click="handleUpdate(scope.row)">编辑
           </el-button>
           <el-button
-            v-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:user:ban') !== -1 && scope.row.enable === 1"
+            v-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:user:ban') !== -1 && scope.row.isEnable === '1'"
             size="mini"
             type="warning"
-            @click="handleUpdate(scope.row)">禁用
+            @click="handleBan(scope.row)">禁用
           </el-button>
           <el-button
-            v-else-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:user:ban') !== -1 && scope.row.enable === 0"
+            v-else-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:user:ban') !== -1 && scope.row.isEnable === '0'"
             size="mini"
             type="success"
-            @click="handleUpdate(scope.row)">启用
+            @click="handleBan(scope.row)">启用
           </el-button>
           <el-button
             v-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:user:delete') !== -1"
@@ -133,9 +133,11 @@
 
         <el-form-item class="contact-us-form-item" label="启用">
           <el-switch
-            v-model="contactUs.enable"
+            v-model="contactUs.isEnable"
             active-color="#13ce66"
-            inactive-color="#ff4949"/>
+            inactive-color="#ff4949"
+            active-value="1"
+            inactive-value="0"/>
         </el-form-item>
 
         <el-form-item class="contact-us-form-item" label="办公地址">
@@ -148,7 +150,7 @@
 
         <el-form-item class="contact-us-form-item" label="合作邮箱">
           <el-input
-            v-model="contactUs.cooperation_email"
+            v-model="contactUs.cooperationEmail"
             style="width: 90%;"
             class="filter-item"
             placeholder="请输入"/>
@@ -156,7 +158,7 @@
 
         <el-form-item class="contact-us-form-item" label="办公电话">
           <el-input
-            v-model="contactUs.office_telephone"
+            v-model="contactUs.officeTelephone"
             style="width: 90%;"
             class="filter-item"
             placeholder="请输入"/>
@@ -164,7 +166,7 @@
 
         <el-form-item class="contact-us-form-item" label="邮政编码">
           <el-input
-            v-model="contactUs.zip_code"
+            v-model="contactUs.zipCode"
             style="width: 90%;"
             class="filter-item"
             placeholder="请输入"/>
@@ -182,7 +184,10 @@
           <el-upload
             :on-preview="handlePreview"
             :on-remove="handleRemove"
-            action="https://jsonplaceholder.typicode.com/posts/"
+            :on-success="handleSuccess"
+            :file-list="fileList"
+            :headers="myHeaders"
+            :action="uploadUrl()"
             list-type="picture-card">
             <i class="el-icon-plus"/>
           </el-upload>
@@ -205,7 +210,8 @@
 /* eslint-disable semi */
 
 import { mapGetters } from 'vuex'
-import { fetchList } from '@/api/official-site/contact-us/contactUs'
+import { fetchList, createContactUs, updateContactUs, deleteContactUs, checkoutStatusContactUs } from '@/api/official-site/contact-us/contactUs'
+import { getToken } from '@/utils/auth'
 
 export default {
   name: 'ContactUs',
@@ -215,20 +221,23 @@ export default {
       contactUs: {
         id: null,
         address: '',
-        cooperation_email: '',
-        office_telephone: '',
-        zip_code: '',
+        cooperationEmail: '',
+        officeTelephone: '',
+        zipCode: '',
         hotline: '',
         name: '',
         pic: '',
-        enable: ''
+        isEnable: '1'
+      },
+      myHeaders: {
+        'x-auth-token': getToken() // 文件上传携带token
       },
       total: null,
       listLoading: true,
       listQuery: {
         page: 1,
         size: 5,
-        enable: '-1',
+        order: 'update_time desc',
         cond: {}
       },
       sortOptions: [{ label: '全部', key: '-1' }, { label: '已启用', key: '1' }, { label: '未启用', key: '0' }],
@@ -238,7 +247,8 @@ export default {
       },
       dialogStatus: '',
       dialogFormVisible: false,
-      picVisible: false
+      picVisible: false,
+      fileList: []
     }
   },
   computed: {
@@ -250,20 +260,43 @@ export default {
     this.getList()
   },
   methods: {
+    uploadUrl() {
+      return process.env.BASE_API + '/official/website/contact/us/upload'
+    },
     handleRemove(file, fileList) {
       console.log(file, fileList);
     },
     handlePreview(file) {
-      this.contactUs.pic = file.url;
+      console.log(file);
+      this.contactUs.pic = file.response.data;
       this.picVisible = true;
+    },
+    handleSuccess(res, file, fileList) {
+      if (res.code === 20000) {
+        this.contactUs.pic = res.data;
+      }
     },
     getList() {
       this.listLoading = true;
       fetchList(this.listQuery).then(response => {
-        this.contactUsList = response.data.items;
-        this.total = response.data.total;
+        this.contactUsList = response.data.data.list;
+        this.total = response.data.data.total;
+        this.page = response.data.data.pages;
         this.listLoading = false;
       })
+    },
+    resetContactUs() {
+      this.contactUs = {
+        id: undefined,
+        address: '',
+        cooperationEmail: '',
+        officeTelephone: '',
+        zipCode: '',
+        hotline: '',
+        name: '',
+        pic: '',
+        enable: '1'
+      }
     },
     handleSizeChange(val) {
       this.listQuery.size = val;
@@ -277,19 +310,112 @@ export default {
       this.getList()
     },
     handleCreate() {
+      this.resetContactUs();
+      this.fileList.splice(0, this.fileList.length); // 清空
       this.dialogStatus = 'create';
       this.dialogFormVisible = true
     },
-    handleUpdate() {
+    handleUpdate(row) {
+      this.contactUs = Object.assign({}, row);
+      this.fileList.splice(0, this.fileList.length); // 清空
+      this.fileList.push({ name: row.id, url: row.pic });
       this.dialogStatus = 'update';
       this.dialogFormVisible = true
     },
-    handleDelete() {},
+    handleDelete(row) {
+      deleteContactUs(row.id).then(response => {
+        if (response.data.code === 20000) {
+          this.$notify({
+            title: '成功',
+            message: '删除成功',
+            type: 'success',
+            duration: 2000
+          });
+          this.getList()
+        } else {
+          this.$notify({
+            title: '失败',
+            message: '删除失败',
+            type: 'fail',
+            duration: 2000
+          })
+        }
+      }).catch(err => {
+        this.$message.error(err)
+      })
+    },
+    handleBan(row) {
+      checkoutStatusContactUs(row.id).then(response => {
+        if (response.data.code === 20000) {
+          this.$notify({
+            title: '成功',
+            message: '更新状态成功',
+            type: 'success',
+            duration: 2000
+          });
+          this.getList()
+        } else {
+          this.$notify({
+            title: '失败',
+            message: '更新状态失败',
+            type: 'fail',
+            duration: 2000
+          })
+        }
+      }).catch(err => {
+        this.$message.error(err)
+      })
+    },
     handleDownload() {
 
     },
-    update() {},
-    create() {}
+    update() {
+      updateContactUs(this.contactUs).then(response => {
+        if (response.data.code === 20000) {
+          this.dialogFormVisible = false;
+          this.$notify({
+            title: '成功',
+            message: '更新成功',
+            type: 'success',
+            duration: 2000
+          });
+          this.getList()
+        } else {
+          this.$notify({
+            title: '失败',
+            message: '更新失败',
+            type: 'fail',
+            duration: 2000
+          });
+        }
+      }).catch(err => {
+        this.$message.error(err);
+      })
+    },
+    create() {
+      delete this.contactUs.updateTime;
+      createContactUs(this.contactUs).then(response => {
+        if (response.data.code === 20000) {
+          this.dialogFormVisible = false;
+          this.$notify({
+            title: '成功',
+            message: '创建成功',
+            type: 'success',
+            duration: 2000
+          });
+          this.getList();
+        } else {
+          this.$notify({
+            title: '失败',
+            message: '创建失败',
+            type: 'fail',
+            duration: 2000
+          })
+        }
+      }).catch(err => {
+        this.$message.error(err)
+      })
+    }
   }
 }
 </script>

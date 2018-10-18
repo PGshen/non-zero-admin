@@ -7,15 +7,15 @@
       fit
       highlight-current-row
       style="width: 100%">
-      <el-table-column align="center" label="ID" width="60px">
-        <template slot-scope="scope">
-          <span>{{ scope.row.id }}</span>
-        </template>
+      <el-table-column align="center" label="ID" width="60px" type="index">
+        <!--<template slot-scope="scope">-->
+        <!--<span>{{ scope.row.id }}</span>-->
+        <!--</template>-->
       </el-table-column>
 
       <el-table-column width="140px" align="center" label="Date">
         <template slot-scope="scope">
-          <span>{{ scope.row.created_time | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+          <span>{{ scope.row.updateTime | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
         </template>
       </el-table-column>
 
@@ -27,7 +27,7 @@
 
       <el-table-column min-width="200px" align="left" label="SubHeading">
         <template slot-scope="scope">
-          <span>{{ scope.row.sub_heading }}</span>
+          <span>{{ scope.row.subHeading }}</span>
         </template>
       </el-table-column>
 
@@ -46,16 +46,16 @@
             @click="handleUpdate(scope.row)">编辑
           </el-button>
           <el-button
-            v-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:user:ban') !== -1 && scope.row.enable === 1"
+            v-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:user:ban') !== -1 && scope.row.isEnable === '1'"
             size="mini"
             type="warning"
-            @click="handleUpdate(scope.row)">禁用
+            @click="checkoutStatus(scope.row)">禁用
           </el-button>
           <el-button
-            v-else-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:user:ban') !== -1 && scope.row.enable === 0"
+            v-else-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:user:ban') !== -1 && scope.row.isEnable === '0'"
             size="mini"
             type="success"
-            @click="handleUpdate(scope.row)">启用
+            @click="checkoutStatus(scope.row)">启用
           </el-button>
           <el-button
             v-if="typeof(permList) !== 'undefined' && permList.indexOf('sys:user:delete') !== -1"
@@ -79,64 +79,6 @@
         @current-change="handleCurrentChange"/>
     </div>
 
-    <el-dialog :title="textMap[dialogStatus]" :close-on-click-modal="false" :visible.sync="dialogFormVisible" width="80%">
-      <el-form :model="about_us" class="small-space about-us-form" label-position="left" label-width="70px">
-        <el-form-item class="about-us-form-item" label="类别">
-          <el-select v-model="about_us.type" placeholder="请选择">
-            <el-option
-              v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"/>
-          </el-select>
-        </el-form-item>
-
-        <el-form-item class="about-us-form-item" label="启用">
-          <el-switch
-            v-model="about_us.enable"
-            active-color="#13ce66"
-            inactive-color="#ff4949"/>
-        </el-form-item>
-
-        <el-form-item class="about-us-form-item" label="标题">
-          <el-input
-            v-model="about_us.heading"
-            style="width: 90%;"
-            class="filter-item"
-            placeholder="请输入"/>
-        </el-form-item>
-
-        <el-form-item class="about-us-form-item" label="副标题">
-          <el-input
-            v-model="about_us.sub_heading"
-            style="width: 90%;"
-            class="filter-item"
-            placeholder="请输入"/>
-        </el-form-item>
-
-        <el-form-item style="margin-bottom: 40px;" label="图片">
-          <el-upload
-            :on-preview="handlePreview"
-            :on-remove="handleRemove"
-            action="https://jsonplaceholder.typicode.com/posts/"
-            list-type="picture-card">
-            <i class="el-icon-plus"/>
-          </el-upload>
-          <el-dialog :visible.sync="picVisible">
-            <img :src="about_us.pic" width="100%" alt="">
-          </el-dialog>
-        </el-form-item>
-
-        <div class="editor-container">
-          <Tinymce :height="400" v-model="about_us.text" />
-        </div>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="create">确 定</el-button>
-      </div>
-    </el-dialog>
-
   </div>
 </template>
 
@@ -144,8 +86,10 @@
 /* eslint-disable semi */
 
 import { mapGetters } from 'vuex'
-import { fetchList } from '@/api/official-site/about-us/aboutUs'
 import Tinymce from '@/components/Tinymce'
+import { fetchList, deleteAboutUs, checkoutStatusAboutUs } from '@/api/official-site/about-us/aboutUs';
+import { fetchClazzList } from '@/api/official-site/base-info/clazzConf';
+import { getToken } from '@/utils/auth'
 
 export default {
   name: 'AboutUstabPane',
@@ -159,22 +103,28 @@ export default {
   data() {
     return {
       aboutUsList: null,
-      about_us: {
+      aboutUs: {
         id: null,
-        type: '',
-        created_time: '',
+        aboutUsClass: '',
+        updateTime: '',
         heading: '',
-        sub_heading: '',
+        subHeading: '',
         text: '',
         pic: '',
-        enable: ''
+        isEnable: ''
       },
       total: null,
       listLoading: true,
       listQuery: {
         page: 1,
         size: 5,
-        type: this.type
+        order: 'update_time desc',
+        cond: {
+          aboutUsClass: this.type
+        }
+      },
+      myHeaders: {
+        'x-auth-token': getToken() // 文件上传携带token
       },
       sortOptions: [{ label: '全部', key: '-1' }, { label: '已启用', key: '1' }, { label: '未启用', key: '0' }],
       textMap: {
@@ -184,6 +134,7 @@ export default {
       dialogStatus: '',
       dialogFormVisible: false,
       picVisible: false,
+      clazzOptions: null,
       options: [{
         value: 'INTRODUCTION',
         label: '企业简介'
@@ -202,21 +153,20 @@ export default {
     ])
   },
   created() {
+    fetchClazzList({ clazzName: 'ABOUT_US' }).then(response => {
+      if (response.data.code === 20000) {
+        this.clazzOptions = response.data.data;
+      }
+    });
     this.getList()
   },
   methods: {
-    handleRemove(file, fileList) {
-      console.log(file, fileList);
-    },
-    handlePreview(file) {
-      this.about_us.pic = file.url;
-      this.picVisible = true;
-    },
     getList() {
       this.listLoading = true;
       fetchList(this.listQuery).then(response => {
-        this.aboutUsList = response.data.items;
-        this.total = response.data.total;
+        this.aboutUsList = response.data.data.list;
+        this.total = response.data.data.total;
+        this.page = response.data.data.pages;
         this.listLoading = false;
       })
     },
@@ -231,20 +181,56 @@ export default {
     handleFilter() {
       this.getList()
     },
-    handleCreate() {
-      this.dialogStatus = 'create';
-      this.dialogFormVisible = true
+    handleUpdate(aboutUs) {
+      this.$emit('handleEdit', aboutUs)
     },
-    handleUpdate() {
-      this.dialogStatus = 'update';
-      this.dialogFormVisible = true
+    handleDelete(row) {
+      deleteAboutUs(row.id).then(response => {
+        if (response.data.status) {
+          this.$notify({
+            title: '成功',
+            message: '删除成功',
+            type: 'success',
+            duration: 2000
+          });
+          this.getList()
+        } else {
+          this.$notify({
+            title: '失败',
+            message: '删除失败',
+            type: 'fail',
+            duration: 2000
+          })
+        }
+      }).catch(err => {
+        this.$message.error(err)
+      })
     },
-    handleDelete() {},
+    checkoutStatus(row) {
+      checkoutStatusAboutUs(row.id).then(response => {
+        if (response.data.status) {
+          this.$notify({
+            title: '成功',
+            message: '更新状态成功',
+            type: 'success',
+            duration: 2000
+          });
+          this.getList()
+        } else {
+          this.$notify({
+            title: '失败',
+            message: '更新状态失败',
+            type: 'fail',
+            duration: 2000
+          })
+        }
+      }).catch(err => {
+        this.$message.error(err)
+      })
+    },
     handleDownload() {
 
-    },
-    update() {},
-    create() {}
+    }
   }
 }
 </script>

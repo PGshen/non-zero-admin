@@ -297,3 +297,11 @@ export function deepClone(source) {
 export function uniqueArr(arr) {
   return Array.from(new Set(arr))
 }
+
+export function shortStr(str) {
+  if (str.length > 60) {
+    return str.substring(0, 60) + '...'
+  } else {
+    return str
+  }
+}
