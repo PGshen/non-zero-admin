@@ -103,16 +103,6 @@ export default {
   data() {
     return {
       aboutUsList: null,
-      aboutUs: {
-        id: null,
-        aboutUsClass: '',
-        updateTime: '',
-        heading: '',
-        subHeading: '',
-        text: '',
-        pic: '',
-        isEnable: ''
-      },
       total: null,
       listLoading: true,
       listQuery: {

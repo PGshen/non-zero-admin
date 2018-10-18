@@ -71,7 +71,7 @@
         </el-form-item>
 
         <div class="editor-container">
-          <Tinymce :height="400" v-model="aboutUs.text" />
+          <Tinymce ref="mmce" :height="400" v-model="aboutUs.text" />
         </div>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -171,22 +171,27 @@ export default {
     },
     handleCreate() {
       this.aboutUs.id = '';
-      this.aboutUs.created_time = '';
+      this.aboutUs.aboutUsClass = '';
       this.aboutUs.heading = '';
-      this.aboutUs.sub_heading = '';
+      this.aboutUs.subHeading = '';
       this.aboutUs.text = '';
       this.aboutUs.pic = '';
-      this.aboutUs.enable = '';
+      this.fileList.splice(0, this.fileList.length); // 清空
+      this.aboutUs.isEnable = '';
+      this.$refs.mmce.setContent('');
       this.dialogStatus = 'create';
       this.dialogFormVisible = true;
     },
     handleUpdate(aboutUs) {
-      this.aboutUs = aboutUs;
-      this.aboutUs.aboutUsClass = aboutUs.aboutUsClass;
-      this.fileList.splice(0, this.fileList.length); // 清空
-      this.fileList.push({ name: aboutUs.id, url: aboutUs.pic });
       this.dialogStatus = 'update';
       this.dialogFormVisible = true;
+      this.aboutUs = Object.assign({}, aboutUs);
+      this.aboutUs.aboutUsClass = aboutUs.aboutUsClass;
+      setTimeout(() => {
+        this.$refs.mmce.setContent(aboutUs.text);
+      }, 10)
+      this.fileList.splice(0, this.fileList.length); // 清空
+      this.fileList.push({ name: aboutUs.id, url: aboutUs.pic });
     },
     create() {
       delete this.aboutUs.updateTime;
